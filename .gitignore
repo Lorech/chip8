@@ -1,5 +1,6 @@
-# Builds
-/build/*
+# Artifacts
+/.cache
+/build
 
 # Misc.
 .DS_Store
