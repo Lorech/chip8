@@ -1,18 +1,14 @@
 #include <stdbool.h>
 
-#include "memory.h"
 #include "unity.h"
+#include "unity_fixture.h"
 
-void setUp(void) {}
+TEST_GROUP(Execution);
 
-void tearDown(void) {}
+TEST_SETUP(Execution) {}
 
-void test_test_execution(void) {
+TEST_TEAR_DOWN(Execution) {}
+
+TEST(Execution, TestsWork) {
     TEST_ASSERT_TRUE(true);
-}
-
-int main(void) {
-    UNITY_BEGIN();
-    RUN_TEST(test_test_execution);
-    return UNITY_END();
 }
