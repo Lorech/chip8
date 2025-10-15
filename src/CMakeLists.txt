@@ -1,0 +1,7 @@
+file(GLOB_RECURSE CHIP8_SOURCES CONFIGURE_DEPENDS *.c)
+
+add_executable(chip8 ${CHIP8_SOURCES})
+
+set_target_properties(chip8 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
