@@ -21,8 +21,8 @@ uint8_t *memory_load_font(memory_t *memory, font_type_t type) {
 
 uint8_t *memory_load_program(memory_t *memory, const uint8_t *program, uint16_t size) {
     if (size > MEMORY_SIZE - PROGRAM_START) return NULL;
-    memcpy(&memory->data[FONT_START], program, size);
-    return &memory->data[FONT_START];
+    memcpy(&memory->data[PROGRAM_START], program, size);
+    return &memory->data[PROGRAM_START];
 }
 
 uint8_t *memory_read(memory_t *memory, uint16_t address) {
