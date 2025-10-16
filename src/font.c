@@ -1,6 +1,6 @@
 #include "font.h"
 
-#include <stdio.h>
+#include <stddef.h>
 #include <strings.h>
 
 // clang-format off
