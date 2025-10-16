@@ -26,7 +26,7 @@ The project is configured with unit tests using the [Unity framework](https://gi
 2. Generate the runner for the test group and update `main` for the test suite:
 
 ```sh
-python generate_unity_runners.py
+python tools/generate_unity_runners.py
 ```
 
 3. Compile the test runners
