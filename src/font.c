@@ -96,7 +96,7 @@ font_data_t font_get(font_type_t type) {
     return FONT_TABLE[type];
 }
 
-font_type_t font_by_name(char *name) {
+font_type_t font_by_name(const char *name) {
     if (name == NULL) return FONT_COUNT;
 
     for (uint8_t i = 0; i < FONT_COUNT; ++i) {

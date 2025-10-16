@@ -35,4 +35,4 @@ font_data_t font_get(font_type_t type);
  * @param name - The name of the font to search for
  * @returns The type of the font, or FONT_COUNT if invalid
  */
-font_type_t font_by_name(char *name);
+font_type_t font_by_name(const char *name);

@@ -35,7 +35,7 @@ memory_t memory_create(void);
  * @param size - The size of the program
  * @returns Pointer to the first address of the program, or NULL if invalid
  */
-uint8_t *memory_load_program(memory_t *memory, uint8_t *program, uint16_t size);
+uint8_t *memory_load_program(memory_t *memory, const uint8_t *program, uint16_t size);
 
 /**
  * Loads the requested font into memory.
