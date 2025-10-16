@@ -22,7 +22,8 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 set(GENERATOR_SCRIPT ${TOOLS_DIR}/generate_unity_runners.py)
 set(GENERATED_SOURCES
     ${RUNNERS_DIR}/all_tests.c
-    ${RUNNERS_DIR}/test_execution_runner.c
+    ${RUNNERS_DIR}/test_font_runner.c
+    ${RUNNERS_DIR}/test_memory_runner.c
 )
 
 add_custom_command(
