@@ -1,5 +1,9 @@
-# Builds
-/build/*
+# Generated
+/test/runners
+
+# Artifacts
+/.cache
+/build
 
 # Misc.
 .DS_Store
