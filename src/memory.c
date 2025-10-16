@@ -1,10 +1,22 @@
 #include "memory.h"
 
-#include <stdio.h>
+#include <string.h>
+
+#include "font.h"
 
 memory_t memory_create(void) {
     memory_t memory = {0};
+    memory_load_font(&memory, DEFAULT_FONT);
     return memory;
+}
+
+uint8_t *memory_load_font(memory_t *memory, font_type_t type) {
+    font_data_t font = font_get(type);
+    if (font.data == NULL) return NULL;
+    if (font.size > MEMORY_SIZE - FONT_START) return NULL;
+    memory->font = type;
+    memcpy(&memory->data[FONT_START], font.data, font.size);
+    return &memory->data[FONT_START];
 }
 
 uint8_t *memory_read(memory_t *memory, uint16_t address) {

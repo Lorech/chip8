@@ -2,21 +2,41 @@
 
 #include <stdint.h>
 
+#include "font.h"
+
 #define MEMORY_SIZE  (4 * 1024) // 4KB RAM per specification
 #define MEMORY_START 0x200      // General convention
 #define ADDRESS_SIZE 0xFFF      // 12-bit addresses per specification
 
 typedef struct {
-    uint8_t data[MEMORY_SIZE];
+    uint8_t     data[MEMORY_SIZE];
+    font_type_t font;
 } memory_t;
 
 /**
  * Initializes the memory module.
  *
+ * The initialization step:
+ *  1. Allocates zeroed out `MEMORY_SIZE` bytes of memory;
+ *  2. Loads `DEFAULT_FONT` into memory starting from `FONT_START`.
+ *
  * Due to the very small and fixed memory size required by the CHIP-8, memory
  * can be allocated on the stack, so there is no corresponding cleanup function.
  */
 memory_t memory_create(void);
+
+/**
+ * Loads the requested font into memory.
+ *
+ * Validates the requested font, returning NULL if not. The font will be loaded
+ * into memory starting from memory address `FONT_START`, which is validated to
+ * fit within the allocated memory, returning NULL if not.
+ *
+ * @param memory - The memory module to load the font to
+ * @param type - The font type to load into memory
+ * @returns Pointer to the first address of the font, or NULL for invalid font
+ */
+uint8_t *memory_load_font(memory_t *memory, font_type_t type);
 
 /**
  * Grants access to the memory at the requested address.
