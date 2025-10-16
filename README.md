@@ -17,3 +17,17 @@ make build
 ```sh
 make run
 ```
+
+## Testing
+
+The project is configured with unit tests using the [Unity framework](https://github.com/ThrowTheSwitch/Unity). Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
+
+1. Write a test group, based on [Unity's second example](https://github.com/ThrowTheSwitch/Unity/tree/v2.6.1/examples/example_2) or any of the existing test suites in the project;
+2. Generate the runner for the test group and update `main` for the test suite:
+
+```sh
+python generate_unity_runners.py
+```
+
+3. Compile the test runners
+4. Run the test executable at `build/bin/chip8_tests`
