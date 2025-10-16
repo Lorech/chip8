@@ -10,12 +10,13 @@ FetchContent_MakeAvailable(Unity)
 
 include_directories(${unity_SOURCE_DIR}/src)
 include_directories(${unity_SOURCE_DIR}/extras/fixture/src)
-include_directories(${unity_SOURCE_DIR}/extras/memory/src)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 file(GLOB CHIP8_SOURCES ${PROJECT_SOURCE_DIR}/src/*.c)
 list(FILTER CHIP8_SOURCES EXCLUDE REGEX "main\\.c$")
 file(GLOB_RECURSE TEST_SOURCES *.c)
+
+add_compile_definitions(UNITY_FIXTURE_NO_EXTRAS)
 
 add_executable(chip8_tests
     ${CHIP8_SOURCES}
