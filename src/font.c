@@ -1,6 +1,7 @@
 #include "font.h"
 
 #include <stdio.h>
+#include <strings.h>
 
 // clang-format off
 static const uint8_t FONT_CHIP48_DATA[] = {
@@ -81,16 +82,28 @@ static const uint8_t FONT_ETI660_DATA[] = {
 // clang-format on
 
 static const font_data_t FONT_TABLE[FONT_COUNT] = {
-    [FONT_CHIP48]    = {FONT_CHIP48_DATA, sizeof(FONT_CHIP48_DATA)},
-    [FONT_COSMACVIP] = {FONT_COSMACVIP_DATA, sizeof(FONT_COSMACVIP_DATA)},
-    [FONT_DREAM6800] = {FONT_DREAM6800_DATA, sizeof(FONT_DREAM6800_DATA)},
-    [FONT_ETI660]    = {FONT_ETI660_DATA, sizeof(FONT_ETI660_DATA)},
+    [FONT_CHIP48]    = {"CHIP-48", FONT_CHIP48_DATA, sizeof(FONT_CHIP48_DATA)},
+    [FONT_COSMACVIP] = {"Cosmac VIP", FONT_COSMACVIP_DATA, sizeof(FONT_COSMACVIP_DATA)},
+    [FONT_DREAM6800] = {"Dream 6800", FONT_DREAM6800_DATA, sizeof(FONT_DREAM6800_DATA)},
+    [FONT_ETI660]    = {"ETI 660", FONT_ETI660_DATA, sizeof(FONT_ETI660_DATA)},
 };
 
 font_data_t font_get(font_type_t type) {
     if (type >= FONT_COUNT) {
-        font_data_t invalid = {NULL, 0};
+        font_data_t invalid = {NULL, NULL, 0};
         return invalid;
     }
     return FONT_TABLE[type];
+}
+
+font_type_t font_by_name(char *name) {
+    if (name == NULL) return FONT_COUNT;
+
+    for (uint8_t i = 0; i < FONT_COUNT; ++i) {
+        if (strcasecmp(name, FONT_TABLE[i].name) == 0) {
+            return (font_type_t)i;
+        }
+    }
+
+    return FONT_COUNT;
 }
