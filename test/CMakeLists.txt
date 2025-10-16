@@ -24,6 +24,7 @@ set(GENERATED_SOURCES
     ${RUNNERS_DIR}/all_tests.c
     ${RUNNERS_DIR}/test_font_runner.c
     ${RUNNERS_DIR}/test_memory_runner.c
+    ${RUNNERS_DIR}/test_stack_runner.c
 )
 
 add_custom_command(
