@@ -30,7 +30,7 @@ typedef struct {
 font_data_t font_get(font_type_t type);
 
 /**
- * Gets the type of font by it's case insensitive name.
+ * Gets the type of font by its case insensitive name.
  *
  * @param name - The name of the font to search for
  * @returns The type of the font, or FONT_COUNT if invalid
