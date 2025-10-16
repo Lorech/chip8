@@ -1,3 +1,6 @@
+# Generated
+/test/runners
+
 # Artifacts
 /.cache
 /build
