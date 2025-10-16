@@ -46,3 +46,13 @@ TEST(Memory, LoadFont) {
     TEST_ASSERT_EQUAL_UINT8_ARRAY(cosmac_zero, cosmac_address, cosmac_zero_length);
     TEST_ASSERT_EQUAL_UINT8(FONT_COSMACVIP, memory.font);
 }
+
+TEST(Memory, LoadProgram) {
+    // NOTE: Not a valid CHIP-8 program; copied from font testing.
+    uint8_t program[5] = {0xE0, 0xA0, 0xA0, 0xA0, 0xE0};
+    uint8_t size       = 5;
+
+    uint8_t *address = memory_load_program(&memory, program, size);
+    TEST_ASSERT_NOT_NULL(address);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(program, address, size);
+}

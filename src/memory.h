@@ -4,9 +4,9 @@
 
 #include "font.h"
 
-#define MEMORY_SIZE  (4 * 1024) // 4KB RAM per specification
-#define MEMORY_START 0x200      // General convention
-#define ADDRESS_SIZE 0xFFF      // 12-bit addresses per specification
+#define MEMORY_SIZE   (4 * 1024) // 4KB RAM per specification
+#define ADDRESS_SIZE  0xFFF      // 12-bit addresses per specification
+#define PROGRAM_START 0x200      // Legacy system specification
 
 typedef struct {
     uint8_t     data[MEMORY_SIZE];
@@ -24,6 +24,18 @@ typedef struct {
  * can be allocated on the stack, so there is no corresponding cleanup function.
  */
 memory_t memory_create(void);
+
+/**
+ * Loads the provided program into memory.
+ *
+ * Validates that the program will fit into memory, returning NULL if not.
+ *
+ * @param memory - The memory module to load the font to
+ * @param program - The program to load into memory
+ * @param size - The size of the program
+ * @returns Pointer to the first address of the program, or NULL if invalid
+ */
+uint8_t *memory_load_program(memory_t *memory, uint8_t *program, uint16_t size);
 
 /**
  * Loads the requested font into memory.
