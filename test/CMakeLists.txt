@@ -58,7 +58,6 @@ set_target_properties(chip8_tests PROPERTIES
 )
 
 add_custom_target(tests
-    COMMAND ${CMAKE_BINARY_DIR}/bin/chip8_tests
+    COMMAND $<TARGET_FILE:chip8_tests>
     DEPENDS chip8_tests
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
