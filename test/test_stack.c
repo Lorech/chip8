@@ -5,7 +5,7 @@
 
 TEST_GROUP(Stack);
 
-static stack_t stack;
+static chipstack_t stack;
 
 TEST_SETUP(Stack) {
     stack = stack_create(1);
