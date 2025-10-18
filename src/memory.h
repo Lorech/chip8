@@ -68,7 +68,7 @@ bool memory_write(memory_t *memory, uint16_t address, uint8_t value);
  *
  * Validates that the requested address range is within bounds.
  *
- * @param memory - The memory module to writo te
+ * @param memory - The memory module to write to
  * @param address - The address to start writing from
  * @param buffer - The values to write
  * @param size - The amount of values to write
