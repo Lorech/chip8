@@ -1,4 +1,5 @@
 BasedOnStyle: Google
+AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 AlignConsecutiveMacros: Consecutive
@@ -10,7 +11,6 @@ AllowShortLoopsOnASingleLine: 'false'
 BinPackArguments: 'false'
 BinPackParameters: OnePerLine
 ColumnLimit: '0'
-IndentPPDirectives: BeforeHash
 IndentWidth: '4'
 PointerAlignment: Right
 ReflowComments: IndentOnly
