@@ -74,6 +74,7 @@ static bool cpu_fetch_instruction(cpu_t *cpu, uint16_t *opcode) {
     bool    success = memory_read_bytes(cpu->memory, cpu->PC, bytes, sizeof(bytes));
     if (!success) {
         LOG_ERROR(LOG_SUBSYS_CPU, "Instruction could not be fetched at 0x%04x: Memory overflow.", cpu->PC);
+        return false;
     }
 
     *opcode = (bytes[0] << 8) | bytes[1];

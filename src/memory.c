@@ -25,7 +25,7 @@ bool memory_read_bytes(
 }
 
 bool memory_write(memory_t *memory, uint16_t address, uint8_t value) {
-    if (address > ADDRESS_SIZE) return NULL;
+    if (address > ADDRESS_SIZE) return false;
     memory->data[address] = value;
     return true;
 }
