@@ -54,3 +54,38 @@ bool cpu_load_program(cpu_t *cpu, const uint8_t *program, uint16_t size) {
     cpu_reset(cpu);
     return true;
 }
+
+bool cpu_run_cycle(cpu_t *cpu) {
+    uint16_t opcode;
+    bool     fetch_success = cpu_fetch_instruction(cpu, &opcode);
+    if (!fetch_success) return false;
+
+    bool execute_success = cpu_execute_instruction(cpu, opcode);
+    if (!execute_success) {
+        LOG_ERROR(LOG_SUBSYS_CPU, "Instruction 0x%04x could not be executed", opcode);
+        return false;
+    }
+
+    return true;
+}
+
+static bool cpu_fetch_instruction(cpu_t *cpu, uint16_t *opcode) {
+    uint8_t bytes[2];
+    bool    success = memory_read_bytes(cpu->memory, cpu->PC, bytes, sizeof(bytes));
+    if (!success) {
+        LOG_ERROR(LOG_SUBSYS_CPU, "Instruction could not be fetched at 0x%04x: Memory overflow.", cpu->PC);
+    }
+
+    *opcode = (bytes[0] << 8) | bytes[1];
+    cpu->PC += 2;
+    return true;
+}
+
+static bool cpu_execute_instruction(cpu_t *cpu, uint16_t opcode) {
+    switch (opcode) {
+        default:
+            LOG_WARN(LOG_SUBSYS_CPU, "Tried running unimplemented opcode 0x%04x.", opcode);
+    }
+
+    return true;
+}

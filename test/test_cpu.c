@@ -70,3 +70,11 @@ TEST(Cpu, LoadInvalidProgram) {
     TEST_ASSERT_EQUAL_UINT8(0x204, cpu.PC);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(empty, &cpu.memory->data[cpu.PC], sizeof(MEMORY_SIZE - cpu.PC));
 }
+
+TEST(Cpu, RunCycle) {
+    uint8_t program[2] = {0xAA, 0xBB};
+    bool    success    = cpu_run_cycle(&cpu);
+
+    TEST_ASSERT_TRUE(success);
+    TEST_ASSERT_EQUAL(PROGRAM_START + 2, cpu.PC);
+}

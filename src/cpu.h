@@ -7,6 +7,9 @@
 #include "timer.h"
 
 #define PROGRAM_START 0x200 // Legacy system specification
+#ifndef INSTRUCTIONS_PER_SECOND
+#define INSTRUCTIONS_PER_SECOND 700
+#endif
 
 typedef struct {
     uint16_t     PC;
@@ -75,3 +78,49 @@ bool cpu_load_font(cpu_t *cpu, font_type_t type);
  * @returns If the program was successfully loaded or not
  */
 bool cpu_load_program(cpu_t *cpu, const uint8_t *program, uint16_t size);
+
+/**
+ * Runs a single CPU cycle.
+ *
+ * A CPU cycle consists of a single internal fetch, decode, execute loop. This
+ * loop should therefore be called `INSTRUCTIONS_PER_SECOND` times per second.
+ *
+ * The return value indicates a success state as far as recovering from the
+ * cycle is concerned, i.e., if the returned value is false, that should be
+ * treated as a signal that something fatally wrong ocurred during the cycle,
+ * and the emulator should terminate. Unimplemented or non-critical issues will
+ * therefore still return success, merely logging the issue if logging is on.
+ *
+ * @param cpu - The CPU module to run the cycle
+ * @returns If the cycle executed successfully or not
+ */
+bool cpu_run_cycle(cpu_t *cpu);
+
+/**
+ * Fetches the next instruction from the ROM.
+ *
+ * Since the CHIP-8's memory consists of 8-bit values, but instructions consist
+ * of 16-bit values, this function is responsible for reading and combining two
+ * consecutive bytes of program code into a single opcode.
+ *
+ * If the resulting opcode is valid, true will be returned.
+ *
+ * @param cpu - The CPU module to read the instruction
+ * @param opcode - The resulting opcode, made up of two bytes of code
+ * @returns If the opcode could be successfully read
+ */
+static bool cpu_fetch_instruction(cpu_t *cpu, uint16_t *opcode);
+
+/**
+ * Decodes and executes a single opcode.
+ *
+ * Takes in an opcode, decodes it, and executes its instruction. The return
+ * value indicates a fatal, irrecoverable error, not if the opcode wasn't
+ * handled at all. In these scenarios, a log will be emitted if logging is
+ * enabled, as such an error is a program issue, not a CPU issue.
+ *
+ * @param cpu - The CPU module to execute the instruction
+ * @param opcode - The instruction to execute
+ * @returns If the opcode could be safely handled
+ */
+static bool cpu_execute_instruction(cpu_t *cpu, uint16_t opcode);
