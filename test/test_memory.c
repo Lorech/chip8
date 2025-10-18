@@ -1,6 +1,4 @@
-#include "font.h"
 #include "memory.h"
-#include "unity.h"
 #include "unity_fixture.h"
 
 TEST_GROUP(Memory);
@@ -13,46 +11,59 @@ TEST_SETUP(Memory) {
 
 TEST_TEAR_DOWN(Memory) {}
 
-TEST(Memory, WriteAndRead) {
+TEST(Memory, WriteAndReadSingleValue) {
     uint8_t  value   = 0xAB;
     uint16_t address = 0x200;
 
-    uint8_t *write_ptr = memory_write(&memory, address, value);
-    TEST_ASSERT_NOT_NULL(write_ptr);
-    TEST_ASSERT_EQUAL_UINT8(value, *write_ptr);
+    bool write_success = memory_write(&memory, address, value);
+    TEST_ASSERT_TRUE(write_success);
+    TEST_ASSERT_EQUAL_UINT8(value, memory.data[address]);
 
-    uint8_t *read_ptr = memory_read(&memory, address);
-    TEST_ASSERT_NOT_NULL(read_ptr);
-    TEST_ASSERT_EQUAL_UINT8(value, *read_ptr);
+    uint8_t read_value;
+    bool    read_success = memory_read(&memory, address, &read_value);
+    TEST_ASSERT_TRUE(read_success);
+    TEST_ASSERT_EQUAL_UINT8(value, read_value);
 }
 
-TEST(Memory, NullOnInvalidAddress) {
-    TEST_ASSERT_NULL(memory_read(&memory, 0xFFF + 1));
-    TEST_ASSERT_NULL(memory_write(&memory, 0xFFF + 1, 0xAB));
+TEST(Memory, WriteAndReadInvalidSingleValue) {
+    uint8_t  value   = 0xAB;
+    uint16_t address = MEMORY_SIZE + 1;
+
+    bool write_success = memory_write(&memory, address, value);
+    TEST_ASSERT_FALSE(write_success);
+    TEST_ASSERT_EQUAL_UINT8(0, memory.data[address]);
+
+    uint8_t read_value;
+    bool    read_success = memory_read(&memory, address, &read_value);
+    TEST_ASSERT_FALSE(read_success);
+    TEST_ASSERT_EQUAL_UINT8(0, read_value);
 }
 
-TEST(Memory, LoadFont) {
-    uint8_t *dream_address = memory_load_font(&memory, FONT_DREAM6800);
-    TEST_ASSERT_NOT_NULL(dream_address);
-    uint8_t dream_zero[5]     = {0xE0, 0xA0, 0xA0, 0xA0, 0xE0};
-    uint8_t dream_zero_length = sizeof(dream_zero);
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(dream_zero, dream_address, dream_zero_length);
-    TEST_ASSERT_EQUAL_UINT8(FONT_DREAM6800, memory.font);
+TEST(Memory, WriteAndReadMultipleValues) {
+    uint8_t  values[5] = {0xAB, 0xAC, 0xAD, 0xAE, 0xAF};
+    uint16_t address   = 0x200;
 
-    uint8_t *cosmac_address = memory_load_font(&memory, FONT_COSMACVIP);
-    TEST_ASSERT_NOT_NULL(cosmac_address);
-    uint8_t cosmac_zero[5]     = {0xF0, 0x90, 0x90, 0x90, 0xF0};
-    uint8_t cosmac_zero_length = sizeof(cosmac_zero);
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(cosmac_zero, cosmac_address, cosmac_zero_length);
-    TEST_ASSERT_EQUAL_UINT8(FONT_COSMACVIP, memory.font);
+    bool write_success = memory_write_bytes(&memory, address, values, sizeof(values));
+    TEST_ASSERT_TRUE(write_success);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(values, &memory.data[address], sizeof(values));
+
+    uint8_t read_values[5];
+    bool    read_success = memory_read_bytes(&memory, address, read_values, sizeof(read_values));
+    TEST_ASSERT_TRUE(read_success);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(values, read_values, sizeof(read_values));
 }
 
-TEST(Memory, LoadProgram) {
-    // NOTE: Not a valid CHIP-8 program; copied from font testing.
-    uint8_t program[5] = {0xE0, 0xA0, 0xA0, 0xA0, 0xE0};
-    uint8_t size       = 5;
+TEST(Memory, WriteAndReadInvalidMultipleValues) {
+    uint8_t  empty[5]  = {0};
+    uint8_t  values[5] = {0xAB, 0xAC, 0xAD, 0xAE, 0xAF};
+    uint16_t address   = MEMORY_SIZE + 1;
 
-    uint8_t *address = memory_load_program(&memory, program, size);
-    TEST_ASSERT_NOT_NULL(address);
-    TEST_ASSERT_EQUAL_UINT8_ARRAY(program, address, size);
+    bool write_success = memory_write_bytes(&memory, address, values, sizeof(values));
+    TEST_ASSERT_FALSE(write_success);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(empty, &memory.data[address], sizeof(values));
+
+    uint8_t read_values[5];
+    bool    read_success = memory_read_bytes(&memory, address, read_values, sizeof(read_values));
+    TEST_ASSERT_FALSE(read_success);
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(empty, read_values, sizeof(read_values));
 }
