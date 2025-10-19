@@ -11,6 +11,19 @@
 #define INSTRUCTIONS_PER_SECOND 700
 #endif
 
+typedef enum {
+    CPU_OK = 0,
+    CPU_FETCH_FAILED,
+    CPU_INSTRUCTION_INVALID,
+    CPU_INSTRUCTION_NOT_IMPLEMENTED,
+} cpu_status_code_t;
+
+typedef struct {
+    cpu_status_code_t status;
+    uint16_t          PC;
+    uint16_t          opcode;
+} cpu_state_t;
+
 typedef struct {
     uint16_t     PC;
     uint16_t     I;
@@ -85,16 +98,10 @@ bool cpu_load_program(cpu_t *cpu, const uint8_t *program, uint16_t size);
  * A CPU cycle consists of a single internal fetch, decode, execute loop. This
  * loop should therefore be called `INSTRUCTIONS_PER_SECOND` times per second.
  *
- * The return value indicates a success state as far as recovering from the
- * cycle is concerned, i.e., if the returned value is false, that should be
- * treated as a signal that something fatally wrong ocurred during the cycle,
- * and the emulator should terminate. Unimplemented or non-critical issues will
- * therefore still return success, merely logging the issue if logging is on.
- *
  * @param cpu - The CPU module to run the cycle
- * @returns If the cycle executed successfully or not
+ * @returns The CPU state after running the cycle
  */
-bool cpu_run_cycle(cpu_t *cpu);
+cpu_state_t cpu_run_cycle(cpu_t *cpu);
 
 /**
  * Fetches the next instruction from the ROM.
@@ -103,24 +110,28 @@ bool cpu_run_cycle(cpu_t *cpu);
  * of 16-bit values, this function is responsible for reading and combining two
  * consecutive bytes of program code into a single opcode.
  *
- * If the resulting opcode is valid, true will be returned.
+ * The result variable provided to the function must default to a successful
+ * result, within which the parsed opcode will be written to on success. The
+ * return value indicates if the fetch succeeded, which is to be used as a
+ * signal for terminating the CPU cycle early.
  *
  * @param cpu - The CPU module to read the instruction
- * @param opcode - The resulting opcode, made up of two bytes of code
+ * @param result - The end result of running the entire CPU cycle
  * @returns If the opcode could be successfully read
  */
-static bool cpu_fetch_instruction(cpu_t *cpu, uint16_t *opcode);
+static bool cpu_fetch_instruction(cpu_t *cpu, cpu_state_t *result);
 
 /**
  * Decodes and executes a single opcode.
  *
- * Takes in an opcode, decodes it, and executes its instruction. The return
- * value indicates a fatal, irrecoverable error, not if the opcode wasn't
- * handled at all. In these scenarios, a log will be emitted if logging is
- * enabled, as such an error is a program issue, not a CPU issue.
+ * The result variable provided to the function should default to a successful
+ * result with a valid opcode, which will be read to execute the instruction.
+ * The return value indicates if the instruction execution succeeded, which
+ * is to be used as a signal for terminating the CPU cyucle early. If execution
+ * failed, the rest of the result struct will be modified appropriately.
  *
  * @param cpu - The CPU module to execute the instruction
  * @param opcode - The instruction to execute
  * @returns If the opcode could be safely handled
  */
-static bool cpu_execute_instruction(cpu_t *cpu, uint16_t opcode);
+static bool cpu_execute_instruction(cpu_t *cpu, cpu_state_t *result);

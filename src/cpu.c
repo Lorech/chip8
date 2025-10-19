@@ -1,5 +1,6 @@
 #include "cpu.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "log.h"
@@ -55,37 +56,41 @@ bool cpu_load_program(cpu_t *cpu, const uint8_t *program, uint16_t size) {
     return true;
 }
 
-bool cpu_run_cycle(cpu_t *cpu) {
-    uint16_t opcode;
-    bool     fetch_success = cpu_fetch_instruction(cpu, &opcode);
-    if (!fetch_success) return false;
+cpu_state_t cpu_run_cycle(cpu_t *cpu) {
+    cpu_state_t result = {
+        .status = CPU_OK,
+        .PC     = cpu->PC,
+        .opcode = 0,
+    };
 
-    bool execute_success = cpu_execute_instruction(cpu, opcode);
-    if (!execute_success) {
-        LOG_ERROR(LOG_SUBSYS_CPU, "Instruction 0x%04x could not be executed", opcode);
-        return false;
-    }
+    bool fetch_success = cpu_fetch_instruction(cpu, &result);
+    if (!fetch_success) return result;
 
-    return true;
+    bool execute_success = cpu_execute_instruction(cpu, &result);
+    if (!execute_success) return result;
+
+    return result;
 }
 
-static bool cpu_fetch_instruction(cpu_t *cpu, uint16_t *opcode) {
+static bool cpu_fetch_instruction(cpu_t *cpu, cpu_state_t *result) {
     uint8_t bytes[2];
     bool    success = memory_read_bytes(cpu->memory, cpu->PC, bytes, sizeof(bytes));
     if (!success) {
-        LOG_ERROR(LOG_SUBSYS_CPU, "Instruction could not be fetched at 0x%04x: Memory overflow.", cpu->PC);
+        result->status = CPU_FETCH_FAILED;
         return false;
     }
 
-    *opcode = (bytes[0] << 8) | bytes[1];
+    result->opcode = (bytes[0] << 8) | bytes[1];
     cpu->PC += 2;
     return true;
 }
 
-static bool cpu_execute_instruction(cpu_t *cpu, uint16_t opcode) {
-    switch (opcode) {
+static bool cpu_execute_instruction(cpu_t *cpu, cpu_state_t *result) {
+    switch (result->opcode) {
         default:
-            LOG_WARN(LOG_SUBSYS_CPU, "Tried running unimplemented opcode 0x%04x.", opcode);
+            // TODO: Change to CPU_INSTRUCTION_INVALID once all instructions are defined.
+            result->status = CPU_INSTRUCTION_NOT_IMPLEMENTED;
+            return false;
     }
 
     return true;
