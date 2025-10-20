@@ -3,64 +3,54 @@
 #include <string.h>
 
 #include "bitmask.h"
-#include "display.h"
+#include "font.h"
 #include "log.h"
-#include "memory.h"
 
-void chip8_init(
-    chip8_t     *chip8,
-    memory_t    *memory,
-    chipstack_t *stack,
-    timer_t     *timer,
-    display_t   *display
-) {
-    chip8->PC      = PROGRAM_START;
-    chip8->I       = 0;
-    chip8->memory  = memory;
-    chip8->stack   = stack;
-    chip8->timer   = timer;
-    chip8->display = display;
-    for (uint8_t i = 0; i < 16; ++i) {
-        chip8->V[i] = 0;
-    }
-}
-
-void chip8_reset(chip8_t *chip8) {
-    chip8->PC = PROGRAM_START;
-    chip8->I  = 0;
-    memset(chip8->V, 0, sizeof(chip8->V));
+void chip8_init(chip8_t *chip8) {
+    memset(chip8, 0, sizeof(chip8_t));
+    chip8->pc = PROGRAM_START;
+    chip8_load_font(chip8, DEFAULT_FONT);
 }
 
 bool chip8_load_font(chip8_t *chip8, font_type_t type) {
-    font_data_t font = font_get(type);
-    if (!font.data) return false;
-    bool success = memory_write_bytes(chip8->memory, FONT_START, font.data, font.size);
-    if (success) {
-        chip8->font = type;
+    if (type >= FONT_COUNT) {
+        LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load invalid font.");
+        return false;
     }
-    return success;
+
+    font_data_t font = font_get(type);
+    if (!font.data) {
+        LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load empty font.");
+        return false;
+    } else if (MEMORY_SIZE - FONT_START > font.size) {
+        LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load oversized font.");
+        return false;
+    }
+
+    memcpy(&chip8->ram[FONT_START], font.data, font.size);
+    chip8->font = type;
+    return true;
 }
 
 bool chip8_load_program(chip8_t *chip8, const uint8_t *program, uint16_t size) {
     if (!program) {
-        LOG_WARN(LOG_SUBSYS_chip8, "Attempted to load empty program.");
+        LOG_WARN(LOG_SUBSYS_MEMORY, "Attempted to load empty program.");
+        return false;
+    } else if (MEMORY_SIZE - PROGRAM_START > size) {
+        LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load oversized program.");
         return false;
     }
 
-    bool success = memory_write_bytes(chip8->memory, PROGRAM_START, program, size);
-    if (!success) {
-        LOG_ERROR(LOG_SUBSYS_MEMORY, "Program too large to load into memory.");
-        return false;
-    }
-
-    chip8_reset(chip8);
+    font_type_t existing_font = chip8->font;
+    chip8_init(chip8);
+    chip8_load_font(chip8, existing_font);
+    memcpy(&chip8->ram[PROGRAM_START], program, size);
     return true;
 }
 
 chip8_state_t chip8_run_cycle(chip8_t *chip8) {
     chip8_state_t result = {
         .status = CHIP8_OK,
-        .PC     = chip8->PC,
         .opcode = 0,
     };
 
@@ -75,14 +65,9 @@ chip8_state_t chip8_run_cycle(chip8_t *chip8) {
 
 static bool chip8_fetch_instruction(chip8_t *chip8, chip8_state_t *result) {
     uint8_t bytes[2];
-    bool    success = memory_read_bytes(chip8->memory, chip8->PC, bytes, sizeof(bytes));
-    if (!success) {
-        result->status = CHIP8_FETCH_FAILED;
-        return false;
-    }
-
+    memcpy(&bytes, &chip8->ram[chip8->pc], sizeof(bytes));
     result->opcode = (bytes[0] << 8) | bytes[1];
-    chip8->PC += 2;
+    chip8->pc += 2;
     return true;
 }
 
@@ -91,7 +76,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0x0:
             switch (result->opcode) {
                 case 0x00E0:
-                    *chip8->display = display_create();
+                    memset(chip8->screen, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
                     return true;
                 default:
                     // TODO: Change to CHIP8_INSTRUCTION_INVALID
@@ -99,22 +84,22 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
                     return false;
             }
         case 0x1:
-            chip8->PC = MA(result->opcode);
+            chip8->pc = MA(result->opcode);
             return true;
         case 0x6:
-            chip8->V[N2(result->opcode)] = B2(result->opcode);
+            chip8->v[N2(result->opcode)] = B2(result->opcode);
             return true;
         case 0x7:
-            chip8->V[N2(result->opcode)] += B2(result->opcode);
+            chip8->v[N2(result->opcode)] += B2(result->opcode);
             return true;
         case 0xA:
-            chip8->I = MA(result->opcode);
+            chip8->i = MA(result->opcode);
             return true;
         case 0xD: {
-            uint8_t x     = chip8->V[N2(result->opcode)];
-            uint8_t y     = chip8->V[N3(result->opcode)];
+            uint8_t x     = chip8->v[N2(result->opcode)];
+            uint8_t y     = chip8->v[N3(result->opcode)];
             uint8_t h     = N4(result->opcode);
-            chip8->V[0xF] = display_draw_sprite(chip8->display, x, y, h, &chip8->memory->data[chip8->I]);
+            chip8->v[0xF] = chip8_draw_sprite(chip8, x, y, h, &chip8->ram[chip8->i]);
             return true;
         }
         default:
@@ -124,4 +109,34 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
     }
 
     return true;
+}
+
+bool chip8_draw_sprite(
+    chip8_t *chip8,
+    uint8_t  x,
+    uint8_t  y,
+    uint8_t  h,
+    uint8_t *sprite
+) {
+    // Clamp the starting position within the screen.
+    x = x & (DISPLAY_WIDTH - 1);
+    y = y & (DISPLAY_HEIGHT - 1);
+
+    bool vf = false;
+
+    // Draw byte-by-byte.
+    for (uint8_t j = 0; j < h; ++j) {
+        uint8_t row = sprite[j];
+        for (uint8_t i = 0; i < 8; ++i) {
+            // Sprites do not wrap within the screen.
+            if (x + i >= DISPLAY_WIDTH || y + j >= DISPLAY_HEIGHT) continue;
+            // Draw left-to-right (as opposed to 1 << i)
+            bool  p   = row & (0x80 >> i);
+            bool *old = &chip8->screen[(y + j) * DISPLAY_WIDTH + (x + i)];
+            if (*old && p) vf = true;
+            *old ^= p;
+        }
+    }
+
+    return vf;
 }

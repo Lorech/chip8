@@ -19,18 +19,8 @@ int main(int argc, char **argv) {
     fread(program, 1, MEMORY_SIZE - PROGRAM_START, f);
     fclose(f);
 
-    chip8_t     chip8;
-    memory_t    memory;
-    chipstack_t stack;
-    display_t   display;
-    timer_t     timer;
-
-    memory  = memory_create();
-    stack   = stack_create(4);
-    display = display_create();
-
-    timer_init(&timer);
-    chip8_init(&chip8, &memory, &stack, &timer, &display);
+    chip8_t chip8;
+    chip8_init(&chip8);
     chip8_load_program(&chip8, program, sizeof(program));
 
     SetTargetFPS(FRAMES_PER_SECOND);
@@ -43,7 +33,7 @@ int main(int argc, char **argv) {
         chip8_state_t state = chip8_run_cycle(&chip8);
         for (uint8_t x = 0; x < DISPLAY_WIDTH; ++x) {
             for (uint8_t y = 0; y < DISPLAY_HEIGHT; ++y) {
-                if (chip8.display->screen[y * DISPLAY_WIDTH + x]) {
+                if (chip8.screen[y * DISPLAY_WIDTH + x]) {
                     DrawPixel(x, y, RAYWHITE);
                 }
             }
