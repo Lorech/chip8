@@ -1,8 +1,8 @@
 #include "cpu.h"
 
-#include <stdio.h>
 #include <string.h>
 
+#include "display.h"
 #include "log.h"
 #include "memory.h"
 
@@ -86,9 +86,38 @@ static bool cpu_fetch_instruction(cpu_t *cpu, cpu_state_t *result) {
 }
 
 static bool cpu_execute_instruction(cpu_t *cpu, cpu_state_t *result) {
-    switch (result->opcode) {
+    switch (result->opcode & N1) {
+        case 0x0000:
+            switch (result->opcode) {
+                case 0x00E0:
+                    *cpu->display = display_create();
+                    return true;
+                default:
+                    // TODO: Change to CPU_INSTRUCTION_INVALID
+                    result->status = CPU_INSTRUCTION_NOT_IMPLEMENTED;
+                    return false;
+            }
+        case 0x1000:
+            cpu->PC = result->opcode & MA;
+            return true;
+        case 0x6000:
+            cpu->V[result->opcode & N2] = result->opcode & B2;
+            return true;
+        case 0x7000:
+            cpu->V[result->opcode & N2] += result->opcode & B2;
+            return true;
+        case 0xA000:
+            cpu->I = result->opcode & MA;
+            return true;
+        case 0xD000: {
+            uint8_t x   = cpu->V[result->opcode & N2];
+            uint8_t y   = cpu->V[result->opcode & N3];
+            uint8_t h   = result->opcode & N4;
+            cpu->V[0xF] = display_draw_sprite(cpu->display, x, y, h, &cpu->memory->data[cpu->I]);
+            return true;
+        }
         default:
-            // TODO: Change to CPU_INSTRUCTION_INVALID once all instructions are defined.
+            // TODO: Change to CPU_INSTRUCTION_INVALID
             result->status = CPU_INSTRUCTION_NOT_IMPLEMENTED;
             return false;
     }
