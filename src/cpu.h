@@ -20,6 +20,12 @@
 #define B2 0x00FF // Second byte - 8-bit number
 #define MA 0x0FFF // 12-bit memory address
 
+// Bitmask utilities
+#define EXTRACT_N1(x) ((x & N1) >> 12)
+#define EXTRACT_N2(x) ((x & N2) >> 8)
+#define EXTRACT_N3(x) ((x & N3) >> 4)
+#define EXTRACT_N4(x) ((x & N4) >> 0)
+
 typedef enum {
     CPU_OK = 0,
     CPU_FETCH_FAILED,
