@@ -62,8 +62,8 @@ TEST(Memory, WriteAndReadInvalidMultipleValues) {
     TEST_ASSERT_FALSE(write_success);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(empty, &memory.data[address], sizeof(values));
 
-    uint8_t read_values[5];
-    bool    read_success = memory_read_bytes(&memory, address, read_values, sizeof(read_values));
+    uint8_t read_values[5] = {0}; // Initialize to 0 to ensure consistent state for upcoming comparison.
+    bool    read_success   = memory_read_bytes(&memory, address, read_values, sizeof(read_values));
     TEST_ASSERT_FALSE(read_success);
     TEST_ASSERT_EQUAL_UINT8_ARRAY(empty, read_values, sizeof(read_values));
 }
