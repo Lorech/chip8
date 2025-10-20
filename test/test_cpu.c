@@ -72,9 +72,11 @@ TEST(Cpu, LoadInvalidProgram) {
 }
 
 TEST(Cpu, RunCycle) {
-    uint8_t program[2] = {0xAA, 0xBB};
-    bool    success    = cpu_run_cycle(&cpu);
+    uint8_t     program[2] = {0xAA, 0xBB};
+    bool        loaded     = cpu_load_program(&cpu, program, sizeof(program));
+    cpu_state_t result     = cpu_run_cycle(&cpu);
 
-    TEST_ASSERT_TRUE(success);
-    TEST_ASSERT_EQUAL(PROGRAM_START + 2, cpu.PC);
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CPU_INSTRUCTION_NOT_IMPLEMENTED, result.status, "All CPU instructions should be unimplemented");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xAABB, result.opcode, "Fetched opcode should join two bytes together");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, cpu.PC, "Valid fetch should advance the program counter by 2");
 }

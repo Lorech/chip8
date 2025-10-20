@@ -5,5 +5,9 @@
 /.cache
 /build
 
+# Roms
+/roms
+*.ch8
+
 # Misc.
 .DS_Store
