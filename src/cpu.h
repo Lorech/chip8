@@ -11,21 +11,6 @@
 #define INSTRUCTIONS_PER_SECOND 700
 #endif
 
-// Bitmasks
-#define N1 0xF000 // First nibble - instruction group
-#define N2 0x0F00 // Second nibble - register lookup
-#define N3 0x00F0 // Third nibble - register lookup
-#define N4 0x000F // Fourth nibble - 4-bit number
-#define B1 0xFF00 // First byte - added for completion sake
-#define B2 0x00FF // Second byte - 8-bit number
-#define MA 0x0FFF // 12-bit memory address
-
-// Bitmask utilities
-#define EXTRACT_N1(x) ((x & N1) >> 12)
-#define EXTRACT_N2(x) ((x & N2) >> 8)
-#define EXTRACT_N3(x) ((x & N3) >> 4)
-#define EXTRACT_N4(x) ((x & N4) >> 0)
-
 typedef enum {
     CPU_OK = 0,
     CPU_FETCH_FAILED,

@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "bitmask.h"
 #include "display.h"
 #include "log.h"
 #include "memory.h"
@@ -86,8 +87,8 @@ static bool cpu_fetch_instruction(cpu_t *cpu, cpu_state_t *result) {
 }
 
 static bool cpu_execute_instruction(cpu_t *cpu, cpu_state_t *result) {
-    switch (result->opcode & N1) {
-        case 0x0000:
+    switch (N1(result->opcode)) {
+        case 0x0:
             switch (result->opcode) {
                 case 0x00E0:
                     *cpu->display = display_create();
@@ -97,22 +98,22 @@ static bool cpu_execute_instruction(cpu_t *cpu, cpu_state_t *result) {
                     result->status = CPU_INSTRUCTION_NOT_IMPLEMENTED;
                     return false;
             }
-        case 0x1000:
-            cpu->PC = result->opcode & MA;
+        case 0x1:
+            cpu->PC = MA(result->opcode);
             return true;
-        case 0x6000:
-            cpu->V[EXTRACT_N2(result->opcode)] = result->opcode & B2;
+        case 0x6:
+            cpu->V[N2(result->opcode)] = B2(result->opcode);
             return true;
-        case 0x7000:
-            cpu->V[EXTRACT_N2(result->opcode)] += result->opcode & B2;
+        case 0x7:
+            cpu->V[N2(result->opcode)] += B2(result->opcode);
             return true;
-        case 0xA000:
-            cpu->I = result->opcode & MA;
+        case 0xA:
+            cpu->I = MA(result->opcode);
             return true;
-        case 0xD000: {
-            uint8_t x   = cpu->V[EXTRACT_N2(result->opcode)];
-            uint8_t y   = cpu->V[EXTRACT_N3(result->opcode)];
-            uint8_t h   = EXTRACT_N4(result->opcode);
+        case 0xD: {
+            uint8_t x   = cpu->V[N2(result->opcode)];
+            uint8_t y   = cpu->V[N3(result->opcode)];
+            uint8_t h   = N4(result->opcode);
             cpu->V[0xF] = display_draw_sprite(cpu->display, x, y, h, &cpu->memory->data[cpu->I]);
             return true;
         }
