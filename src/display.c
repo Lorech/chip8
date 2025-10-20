@@ -27,8 +27,8 @@ bool display_draw_sprite(
             // Draw left-to-right (as opposed to 1 << i)
             bool  p   = row & (0x80 >> i);
             bool *old = &display->screen[(y + j) * DISPLAY_WIDTH + (x + i)];
-            *old ^= p;
             if (*old && p) vf = true;
+            *old ^= p;
         }
     }
 
