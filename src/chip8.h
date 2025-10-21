@@ -35,15 +35,15 @@ typedef struct {
 
 typedef struct {
     // Core emulator state
-    uint8_t  ram[MEMORY_SIZE];                       // Available memory
-    uint16_t pc;                                     // Current memory address
-    uint16_t i;                                      // Arbitrary address within memory
-    uint8_t  v[16];                                  // Arbitrary variable registers
-    uint16_t stack[16];                              // Subroutine return addresses
-    uint8_t  stack_pointer;                          // Current position within stack
-    uint8_t  delay_timer;                            // Value of delay timer
-    uint8_t  sound_timer;                            // Value of sound timer
-    bool     screen[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
+    uint8_t  memory[MEMORY_SIZE];                     // Available memory
+    uint16_t pc;                                      // Current memory address
+    uint16_t i;                                       // Arbitrary address within memory
+    uint8_t  v[16];                                   // Arbitrary variable registers
+    uint16_t stack[16];                               // Subroutine return addresses
+    uint8_t  stack_pointer;                           // Current position within stack
+    uint8_t  delay_timer;                             // Value of delay timer
+    uint8_t  sound_timer;                             // Value of sound timer
+    bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
     // Meta-state for debugging and configuration
     font_type_t font; // Active font
 } chip8_t;

@@ -16,12 +16,12 @@ TEST(CHIP8, LoadValidFont) {
     // chip8_init loads the default font, which can be configured when
     // compiling, so we need to pull the starting values to compare against.
     font_type_t old_font   = chip8.font;
-    uint8_t    *old_memory = &chip8.ram[FONT_START];
+    uint8_t    *old_memory = &chip8.memory[FONT_START];
 
     uint8_t zero[5] = {0xE0, 0xA0, 0xA0, 0xA0, 0xE0};
     bool    success = chip8_load_font(&chip8, FONT_DREAM6800);
     TEST_ASSERT_TRUE_MESSAGE(success, "Loading valid font should not fail.");
-    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(zero, &chip8.ram[FONT_START], sizeof(zero), "Loaded font should update memory.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(zero, &chip8.memory[FONT_START], sizeof(zero), "Loaded font should update memory.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(FONT_DREAM6800, chip8.font, "Loaded font should be set as active font");
 }
 
@@ -29,11 +29,11 @@ TEST(CHIP8, LoadInvalidFont) {
     // chip8_init loads the default font, which can be configured when
     // compiling, so we need to pull the starting values to compare against.
     font_type_t old_font   = chip8.font;
-    uint8_t    *old_memory = &chip8.ram[FONT_START];
+    uint8_t    *old_memory = &chip8.memory[FONT_START];
 
     bool success = chip8_load_font(&chip8, FONT_COUNT);
     TEST_ASSERT_FALSE_MESSAGE(success, "Loading invalid font should fail.");
-    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(old_memory, &chip8.ram[FONT_START], 5, "Ignored font should not update memory.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(old_memory, &chip8.memory[FONT_START], 5, "Ignored font should not update memory.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(old_font, chip8.font, "Ignored font should nont update active font");
 }
 
@@ -54,7 +54,7 @@ TEST(CHIP8, LoadValidProgram) {
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, chip8.delay_timer, "Delay timer should reset if loading succeeded.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, chip8.sound_timer, "Sound timer should reset if loading succeeded.");
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(empty_vars, &chip8.v, sizeof(empty_vars), "Variables should reset if loading succeeded.");
-    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(program, &chip8.ram[PROGRAM_START], sizeof(program), "Memory should contain the new program if loading succeeded.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(program, &chip8.memory[PROGRAM_START], sizeof(program), "Memory should contain the new program if loading succeeded.");
 }
 
 TEST(CHIP8, LoadInvalidProgram) {
@@ -83,7 +83,7 @@ TEST(CHIP8, LoadInvalidProgram) {
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.delay_timer, "Delay timer should not reset if loading failed.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.sound_timer, "Sound timer should not reset if loading failed.");
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(expected_vars, &chip8.v, sizeof(expected_vars), "Variables should not reset if loading failed.");
-    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(empty_program, &chip8.ram[PROGRAM_START], sizeof(empty_program), "Memory should not change if loading failed.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(empty_program, &chip8.memory[PROGRAM_START], sizeof(empty_program), "Memory should not change if loading failed.");
 }
 
 TEST(CHIP8, ClearScreen) {
@@ -151,20 +151,20 @@ TEST(CHIP8, DrawSprite) {
     uint8_t program[2] = {0xD0, 0x15};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
-    chip8.i          = 0x300;
-    chip8.v[0]       = 1;
-    chip8.v[1]       = 2;
-    chip8.ram[0x300] = 0xF0;
-    chip8.ram[0x301] = 0x90;
-    chip8.ram[0x302] = 0x90;
-    chip8.ram[0x303] = 0x90;
-    chip8.ram[0x304] = 0xF0;
+    chip8.i             = 0x300;
+    chip8.v[0]          = 1;
+    chip8.v[1]          = 2;
+    chip8.memory[0x300] = 0xF0;
+    chip8.memory[0x301] = 0x90;
+    chip8.memory[0x302] = 0x90;
+    chip8.memory[0x303] = 0x90;
+    chip8.memory[0x304] = 0xF0;
 
     chip8_state_t result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xD015, result.opcode, "Should create \"Draw Sprite\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, chip8.v[0xF], "Should not set VF.");
-    TEST_ASSERT_TRUE_MESSAGE(chip8.screen[(2 * DISPLAY_WIDTH) + 1], "Top-left pixel of sprite should be ON.");
-    TEST_ASSERT_TRUE_MESSAGE(chip8.screen[(6 * DISPLAY_WIDTH) + 4], "Bottom-right pixel of sprite should be ON.");
+    TEST_ASSERT_TRUE_MESSAGE(chip8.display[(2 * DISPLAY_WIDTH) + 1], "Top-left pixel of sprite should be ON.");
+    TEST_ASSERT_TRUE_MESSAGE(chip8.display[(6 * DISPLAY_WIDTH) + 4], "Bottom-right pixel of sprite should be ON.");
 }

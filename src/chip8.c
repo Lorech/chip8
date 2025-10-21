@@ -27,7 +27,7 @@ bool chip8_load_font(chip8_t *chip8, font_type_t type) {
         return false;
     }
 
-    memcpy(&chip8->ram[FONT_START], font.data, font.size);
+    memcpy(&chip8->memory[FONT_START], font.data, font.size);
     chip8->font = type;
     return true;
 }
@@ -44,7 +44,7 @@ bool chip8_load_program(chip8_t *chip8, const uint8_t *program, uint16_t size) {
     font_type_t existing_font = chip8->font;
     chip8_init(chip8);
     chip8_load_font(chip8, existing_font);
-    memcpy(&chip8->ram[PROGRAM_START], program, size);
+    memcpy(&chip8->memory[PROGRAM_START], program, size);
     return true;
 }
 
@@ -65,7 +65,7 @@ chip8_state_t chip8_run_cycle(chip8_t *chip8) {
 
 static bool chip8_fetch_instruction(chip8_t *chip8, chip8_state_t *result) {
     uint8_t bytes[2];
-    memcpy(&bytes, &chip8->ram[chip8->pc], sizeof(bytes));
+    memcpy(&bytes, &chip8->memory[chip8->pc], sizeof(bytes));
     result->opcode = (bytes[0] << 8) | bytes[1];
     chip8->pc += 2;
     return true;
@@ -76,7 +76,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0x0:
             switch (result->opcode) {
                 case 0x00E0:
-                    memset(chip8->screen, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
+                    memset(chip8->display, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
                     return true;
                 default:
                     // TODO: Change to CHIP8_INSTRUCTION_INVALID
@@ -99,7 +99,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
             uint8_t x     = chip8->v[N2(result->opcode)];
             uint8_t y     = chip8->v[N3(result->opcode)];
             uint8_t h     = N4(result->opcode);
-            chip8->v[0xF] = chip8_draw_sprite(chip8, x, y, h, &chip8->ram[chip8->i]);
+            chip8->v[0xF] = chip8_draw_sprite(chip8, x, y, h, &chip8->memory[chip8->i]);
             return true;
         }
         default:
@@ -132,7 +132,7 @@ static bool chip8_draw_sprite(
             if (x + i >= DISPLAY_WIDTH || y + j >= DISPLAY_HEIGHT) continue;
             // Draw left-to-right (as opposed to 1 << i)
             bool  p   = row & (0x80 >> i);
-            bool *old = &chip8->screen[(y + j) * DISPLAY_WIDTH + (x + i)];
+            bool *old = &chip8->display[(y + j) * DISPLAY_WIDTH + (x + i)];
             if (*old && p) vf = true;
             *old ^= p;
         }

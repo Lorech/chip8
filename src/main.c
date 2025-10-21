@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
         chip8_state_t state = chip8_run_cycle(&chip8);
         for (uint8_t x = 0; x < DISPLAY_WIDTH; ++x) {
             for (uint8_t y = 0; y < DISPLAY_HEIGHT; ++y) {
-                if (chip8.screen[y * DISPLAY_WIDTH + x]) {
+                if (chip8.display[y * DISPLAY_WIDTH + x]) {
                     DrawPixel(x, y, RAYWHITE);
                 }
             }
