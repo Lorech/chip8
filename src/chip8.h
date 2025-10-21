@@ -29,8 +29,10 @@ typedef enum {
 } chip8_status_t;
 
 typedef struct {
-    chip8_status_t status; // Latest emulator status
-    uint16_t       opcode; // Last processed opcode
+    chip8_status_t status;             // Latest emulator status
+    uint16_t       opcode;             // Last processed opcode
+    bool           frame_buffer_dirty; // If the display changed and must redraw
+    bool           flag_set;           // If the flag register was set by drawing
 } chip8_state_t;
 
 typedef struct {
@@ -127,22 +129,25 @@ static bool chip8_fetch_instruction(chip8_t *cpu, chip8_state_t *result);
 static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result);
 
 /**
- * Draws a sprite to the display.
+ * Processes system (0x0xxx) instructions.
  *
- * Corresponds to the 0xDxxx function of the CHIP-8. The coordinate values
- * must be given in terms of actual value instead of variable indices.
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is 0.
  *
- * @param chip8 - The CHIP-8 to draw to
- * @param x - The x coordinate to start drawing from
- * @param y - The y coordinate to start drawing from
- * @param size - The size of the sprite (should match the size of *sprite)
- * @param sprite - The sprite data to draw
- * @returns The new value of the flag register after drawing
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
  */
-static bool chip8_draw_sprite(
-    chip8_t *chip8,
-    uint8_t  x,
-    uint8_t  y,
-    uint8_t  h,
-    uint8_t *sprite
-);
+static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes drawing (0xDxxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is D.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result);
