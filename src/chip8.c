@@ -54,7 +54,6 @@ chip8_state_t chip8_run_cycle(chip8_t *chip8) {
         .status             = CHIP8_OK,
         .opcode             = 0,
         .frame_buffer_dirty = false,
-        .flag_set           = false,
     };
 
     bool fetch_success = chip8_fetch_instruction(chip8, &result);
@@ -160,6 +159,7 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
     // Data for drawing the actual sprite
     uint8_t  h      = N4(result->opcode);
     uint8_t *sprite = &chip8->memory[chip8->i];
+    uint8_t *f      = &chip8->v[0xF]; // Flag gets set if a pixel turns off
 
     // Iterate sprite byte-by-byte
     for (uint8_t j = 0; j < h; ++j) {
@@ -171,13 +171,11 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
             // Draw left-to-right (as opposed to 1 << i)
             bool  p   = row & (0x80 >> i);
             bool *old = &chip8->display[(y + j) * DISPLAY_WIDTH + (x + i)];
-            if (*old && p) result->flag_set = true;
+            if (*old && p) *f = 0x1;
             *old ^= p;
         }
     }
 
     result->frame_buffer_dirty = true;
-    chip8->v[0xF]              = result->flag_set;
-
     return true;
 }

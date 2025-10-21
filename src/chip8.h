@@ -34,7 +34,6 @@ typedef struct {
     chip8_status_t status;             // Latest emulator status
     uint16_t       opcode;             // Last processed opcode
     bool           frame_buffer_dirty; // If the display changed and must redraw
-    bool           flag_set;           // If the flag register was set by drawing
 } chip8_state_t;
 
 typedef struct {
