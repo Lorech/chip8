@@ -142,6 +142,18 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result);
 static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *result);
 
 /**
+ * Processes arithmetic (0x8xxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is 8.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_arithmetic_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
  * Processes drawing (0xDxxx) instructions.
  *
  * Behaves in the same way as `chip8_execute_instruction`, except it only

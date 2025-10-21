@@ -1,5 +1,6 @@
 #include "chip8.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "bitmask.h"
@@ -111,6 +112,8 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0x7: // Add to Variable
             chip8->v[N2(result->opcode)] += B2(result->opcode);
             return true;
+        case 0x8: // Arithemtic & Logic
+            return chip8_execute_arithmetic_instruction(chip8, result);
         case 0x9: // Skip if Variables Not Equal
             if (chip8->v[N2(result->opcode)] != chip8->v[N3(result->opcode)]) {
                 chip8->pc += 2;
@@ -148,6 +151,63 @@ static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *resu
         default:
             // All other opcodes execute native machine code at address 0xNNN
             result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
+            return false;
+    }
+}
+
+static bool chip8_execute_arithmetic_instruction(chip8_t *chip8, chip8_state_t *result) {
+    uint8_t *x = &chip8->v[N2(result->opcode)];
+    uint8_t *y = &chip8->v[N3(result->opcode)];
+    uint8_t *f = &chip8->v[0xF];
+
+    switch (N4(result->opcode)) {
+        case 0x0: // Set
+            *x = *y;
+            return true;
+        case 0x1: // Bitwise OR
+            *x |= *y;
+            return true;
+        case 0x2: // Bitwise AND
+            *x &= *y;
+            return true;
+        case 0x3: // Bitwise XOR
+            *x ^= *y;
+            return true;
+        case 0x4: // Add with Carry
+            if (*x > UINT8_MAX - *y) *f = 0x1;
+            *x += *y;
+            return true;
+        case 0x5: // Subtract X from Y
+            if (*x > *y) *f = 0x1;
+            *x = *x - *y;
+            return true;
+        case 0x6: // Shift Right
+            // clang-format off
+            // TODO: Make this behavior configurable at runtime.
+#ifdef LEGACY_SHIFT_BEHAVIOR
+            *x = *y;
+#endif
+            *f = (*x) & 0x1;
+            *x >>= 0x1;
+            return true;
+            // clang-format on
+        case 0x7: // Subtract Y from X
+            if (*y > *x) *f = 0x1;
+            *x = *y - *x;
+            return true;
+        case 0xE: // Shift Left
+            // clang-format off
+            // TODO: Make this behavior configurable at runtime.
+#ifdef LEGACY_SHIFT_BEHAVIOR
+            *x = *y;
+#endif
+            *f = (*x >> 7) & 0x1;
+            *x <<= 0x1;
+            return true;
+            // clang-format on
+        default:
+            // Remaining instructions do not resolve
+            result->status = CHIP8_INSTRUCTION_INVALID;
             return false;
     }
 }
