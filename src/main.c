@@ -1,8 +1,6 @@
 #include <stdio.h>
 
 #include "chip8.h"
-#include "display.h"
-#include "memory.h"
 #include "raylib.h"
 
 int main(int argc, char **argv) {
