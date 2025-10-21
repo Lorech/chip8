@@ -123,6 +123,16 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0xA: // Set Index to Address
             chip8->i = MA(result->opcode);
             return true;
+        case 0xB: // Jump with Offset
+            // clang-format off
+            // TODO: Make this behavior configurable at runtime.
+#ifdef LEGACY_JUMP_BEHAVIOR
+            chip8->pc = MA(result->opcode) + chip8->v[0];
+#else
+            chip8->pc = MA(result->opcode) + chip8->v[N2(result->opcode)];
+#endif
+            return true;
+            // clang-format on
         case 0xD: // Draw
             return chip8_execute_draw_instruction(chip8, result);
         default:

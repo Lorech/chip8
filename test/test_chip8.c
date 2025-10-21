@@ -124,6 +124,22 @@ TEST(CHIP8, Jump) {
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x123, chip8.pc, "Should jump PC to provided address.");
 }
 
+// TODO: Add test for legacy/modern offset testing when it is configurable at runtime.
+// Currently, since it depends on a compiler flag, we test with a setup that makes
+// both versions behave the same so that neither behavior can change test results.
+TEST(CHIP8, JumpWithOffset) {
+    uint8_t program[2] = {0xB3, 0x00};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.v[0] = 0x60; // Used as offset with legacy behavior
+    chip8.v[3] = 0x60; // Used as offset with modern behavior
+
+    chip8_state_t result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xB300, result.opcode, "Should create \"Jump With Offset\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x360, chip8.pc, "Should jump PC to calculated address.");
+}
+
 TEST(CHIP8, SetVariable) {
     uint8_t       program[2] = {0x61, 0x23};
     bool          loaded     = chip8_load_program(&chip8, program, sizeof(program));
