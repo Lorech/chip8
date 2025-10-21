@@ -90,11 +90,33 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
                 result->status = CHIP8_STACK_EMPTY;
                 return false;
             }
+        case 0x3: // Skip if Variable Equals
+            if (chip8->v[N2(result->opcode)] == B2(result->opcode)) {
+                chip8->pc += 2;
+            }
+            return true;
+        case 0x4: // Skip if Variable Not Equals
+            if (chip8->v[N2(result->opcode)] != B2(result->opcode)) {
+                chip8->pc += 2;
+            }
+            return true;
+        case 0x5: // Skip if Variables Equal
+            if (chip8->v[N2(result->opcode)] == chip8->v[N3(result->opcode)]) {
+                chip8->pc += 2;
+            }
+            // N4 is unused and can contain any value
+            return true;
         case 0x6: // Set Variable
             chip8->v[N2(result->opcode)] = B2(result->opcode);
             return true;
         case 0x7: // Add to Variable
             chip8->v[N2(result->opcode)] += B2(result->opcode);
+            return true;
+        case 0x9: // Skip if Variables Not Equal
+            if (chip8->v[N2(result->opcode)] != chip8->v[N3(result->opcode)]) {
+                chip8->pc += 2;
+            }
+            // N4 is unused and can contain any value
             return true;
         case 0xA: // Set Index to Address
             chip8->i = MA(result->opcode);
