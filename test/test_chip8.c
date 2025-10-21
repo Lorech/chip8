@@ -34,7 +34,7 @@ TEST(CHIP8, LoadInvalidFont) {
     bool success = chip8_load_font(&chip8, FONT_COUNT);
     TEST_ASSERT_FALSE_MESSAGE(success, "Loading invalid font should fail.");
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(old_memory, &chip8.memory[FONT_START], 5, "Ignored font should not update memory.");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(old_font, chip8.font, "Ignored font should nont update active font");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(old_font, chip8.font, "Ignored font should not update active font");
 }
 
 TEST(CHIP8, LoadValidProgram) {

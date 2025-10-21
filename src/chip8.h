@@ -122,7 +122,7 @@ static bool chip8_fetch_instruction(chip8_t *cpu, chip8_state_t *result);
  *
  * @param chip8 - The CHIP-8 to execute the instruction
  * @param result - The end result of running the entire instruction cycle
- * @returns If the opcode was successfuly executed
+ * @returns If the opcode was successfully executed
  */
 static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result);
 

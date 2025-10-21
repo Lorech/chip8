@@ -34,7 +34,7 @@ cmake --build build
 
 ## Testing
 
-The project utilizes the [Unity framework](https://github.com/ThrowTheSwitch/Unity). to provide unit testing capabilities. Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
+The project utilizes the [Unity framework](https://github.com/ThrowTheSwitch/Unity) to provide unit testing capabilities. Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
 
 1. Write a test group, based on [Unity's second example](https://github.com/ThrowTheSwitch/Unity/tree/v2.6.1/examples/example_2) or any of the existing test suites in the project;
 2. Generate the runner for the test group and update `main` for the test suite:
