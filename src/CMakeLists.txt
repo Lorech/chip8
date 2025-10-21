@@ -9,23 +9,44 @@ FetchContent_Declare(raylib
 
 FetchContent_MakeAvailable(raylib)
 
-file(GLOB_RECURSE CHIP8_SOURCES CONFIGURE_DEPENDS *.c)
+# Core Library (shared across targets)
 
-add_executable(chip8 ${CHIP8_SOURCES})
+file(GLOB CORE_SOURCES CONFIGURE_DEPENDS *.c)
+list(FILTER CORE_SOURCES EXCLUDE REGEX "main\\.c$")
 
-target_link_libraries(${PROJECT_NAME} raylib)
+add_library(${CORE_LIB} STATIC ${CORE_SOURCES})
+
+target_include_directories(${CORE_LIB} PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Desktop Emulator
+
+add_executable(${EMULATOR_EXE} main.c)
+
+target_include_directories(${EMULATOR_EXE} PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+target_link_libraries(${EMULATOR_EXE} PRIVATE
+    ${CORE_LIB}
+    raylib
+)
 
 if (${PLATFORM} STREQUAL "Web")
-    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html") # Tell Emscripten to build an example.html file.
+    set_target_properties(${EMULATOR_EXE} PROPERTIES SUFFIX ".html") # Tell Emscripten to build an example.html file.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY -s GL_ENABLE_GET_PROC_ADDRESS=1")
 endif()
 
 if (APPLE)
-    target_link_libraries(${PROJECT_NAME} "-framework IOKit")
-    target_link_libraries(${PROJECT_NAME} "-framework Cocoa")
-    target_link_libraries(${PROJECT_NAME} "-framework OpenGL")
+    target_link_libraries(${EMULATOR_EXE} PRIVATE
+        "-framework IOKit"
+        "-framework Cocoa"
+        "-framework OpenGL"
+    )
 endif()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(${EMULATOR_EXE} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

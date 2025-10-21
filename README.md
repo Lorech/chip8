@@ -4,23 +4,37 @@ A [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) interpreter written with [Rayli
 
 ## Setup
 
-The project is created using CMake for cross-platform compatibility. On Windows, the preferred method of building the project is using Visual Studio's CMake integration. On macOS and Linux, a small Makefile wrapper has been created for generating the builds:
+The project is created using CMake for cross-platform compatibility.
 
-1. Build and compile the project:
+### Windows
+
+Use Visual Studio's CMake integration to open and run the project. This is currently untested.
+
+### macOS / Linux
+
+Use CMake directly:
+
+1. Build the project:
 
 ```sh
-make build
+cmake -S . -B build
 ```
 
-2. Run the executable:
+2. Compile the executable:
 
 ```sh
-make run
+cmake --build build
+```
+
+3. Run the emulator:
+
+```sh
+./build/bin/chip8 roms/IBM\ Logo.ch8
 ```
 
 ## Testing
 
-The project is configured with unit tests using the [Unity framework](https://github.com/ThrowTheSwitch/Unity). Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
+The project utilizes the [Unity framework](https://github.com/ThrowTheSwitch/Unity) to provide unit testing capabilities. Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
 
 1. Write a test group, based on [Unity's second example](https://github.com/ThrowTheSwitch/Unity/tree/v2.6.1/examples/example_2) or any of the existing test suites in the project;
 2. Generate the runner for the test group and update `main` for the test suite:

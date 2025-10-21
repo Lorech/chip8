@@ -15,18 +15,15 @@ set(TOOLS_DIR ${PROJECT_SOURCE_DIR}/tools)
 set(TEST_DIR ${PROJECT_SOURCE_DIR}/test)
 set(RUNNERS_DIR ${TEST_DIR}/runners)
 
-include_directories(${unity_SOURCE_DIR}/src)
-include_directories(${unity_SOURCE_DIR}/extras/fixture/src)
-include_directories(${PROJECT_SOURCE_DIR}/src)
+# Runner Generation
+
+set(RUNNER_GEN generate_runners)
 
 set(GENERATOR_SCRIPT ${TOOLS_DIR}/generate_unity_runners.py)
 set(GENERATED_SOURCES
     ${RUNNERS_DIR}/all_tests.c
-    ${RUNNERS_DIR}/test_cpu_runner.c
+    ${RUNNERS_DIR}/test_chip8_runner.c
     ${RUNNERS_DIR}/test_font_runner.c
-    ${RUNNERS_DIR}/test_memory_runner.c
-    ${RUNNERS_DIR}/test_stack_runner.c
-    ${RUNNERS_DIR}/test_timer_runner.c
 )
 
 add_custom_command(
@@ -37,31 +34,34 @@ add_custom_command(
     VERBATIM
 )
 
-add_custom_target(generate_tests
+add_custom_target(${RUNNER_GEN}
     DEPENDS ${GENERATED_SOURCES}
 )
 
-file(GLOB CHIP8_SOURCES ${PROJECT_SOURCE_DIR}/src/*.c)
-list(FILTER CHIP8_SOURCES EXCLUDE REGEX "main\\.c$")
+# Test Executable
+
 file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS ${TEST_DIR}/*.c)
 
 add_compile_definitions(UNITY_FIXTURE_NO_EXTRAS)
 
-add_executable(chip8_tests
-    ${CHIP8_SOURCES}
+add_executable(${TEST_EXE}
     ${TEST_SOURCES}
     ${GENERATED_SOURCES}
     ${unity_SOURCE_DIR}/src/unity.c
     ${unity_SOURCE_DIR}/extras/fixture/src/unity_fixture.c
 )
 
-add_dependencies(chip8_tests generate_tests)
+add_dependencies(${TEST_EXE} ${RUNNER_GEN})
 
-set_target_properties(chip8_tests PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+target_include_directories(${TEST_EXE} PRIVATE
+    ${unity_SOURCE_DIR}/src
+    ${unity_SOURCE_DIR}/extras/fixture/src
 )
 
-add_custom_target(tests
-    COMMAND $<TARGET_FILE:chip8_tests>
-    DEPENDS chip8_tests
+target_link_libraries(${TEST_EXE} PRIVATE
+    ${CORE_LIB}
+)
+
+set_target_properties(${TEST_EXE} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
