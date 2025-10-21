@@ -142,9 +142,11 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
             return chip8_execute_draw_instruction(chip8, result);
         case 0xE: // Skip if Key
             return chip8_execute_keypress_instruction(chip8, result);
+        case 0xF: // Miscellaneous
+            return chip8_execute_misc_instruction(chip8, result);
         default:
-            // TODO: Change to CHIP8_INSTRUCTION_INVALID
-            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
+            // Should be unreachable, but added for completion sake
+            result->status = CHIP8_INSTRUCTION_INVALID;
             return false;
     }
 
@@ -267,6 +269,59 @@ static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *re
             // TODO: Implement when keypress handling has been added
             result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
             return false;
+        default:
+            // Remaining instructions do not resolve
+            result->status = CHIP8_INSTRUCTION_INVALID;
+            return false;
+    }
+}
+
+static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result) {
+    uint8_t *x = &chip8->v[N2(result->opcode)];
+
+    switch (B2(result->opcode)) {
+        case 0x07: // Set to Delay Timer
+            *x = chip8->delay_timer;
+            return true;
+        case 0x0A: // Get Key
+            // TODO: Implement when keypress handling has been added
+            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
+            return false;
+        case 0x15: // Set Delay Timer
+            chip8->delay_timer = *x;
+            return true;
+        case 0x18: // Set Sound Timer
+            chip8->sound_timer = *x;
+            return true;
+        case 0x1E: // Add to Index
+            chip8->i += *x;
+            return true;
+        case 0x29: // Get Character
+            chip8->i = FONT_START + 5 * ((*x) & 0xF);
+            return true;
+        case 0x33: // Decimal Coversion
+            chip8->memory[chip8->i + 0] = *x / 100 % 10;
+            chip8->memory[chip8->i + 1] = *x / 10 % 10;
+            chip8->memory[chip8->i + 2] = *x / 1 % 10;
+            return true;
+        case 0x55: // Store Memory
+            for (uint8_t j = 0; j <= N2(result->opcode); ++j) {
+                chip8->memory[chip8->i + j] = chip8->v[j];
+            }
+            // TODO: Make this configurable at runtime
+#ifdef LEGACY_MEMORY_BEHAVIOR
+            chip8->i += N2(result->opcode) + 1;
+#endif
+            return true;
+        case 0x65: // Load Memory
+            for (uint8_t j = 0; j <= N2(result->opcode); ++j) {
+                chip8->v[j] = chip8->memory[chip8->i + j];
+            }
+            // TODO: Make this configurable at runtime
+#ifdef LEGACY_MEMORY_BEHAVIOR
+            chip8->i += N2(result->opcode) + 1;
+#endif
+            return true;
         default:
             // Remaining instructions do not resolve
             result->status = CHIP8_INSTRUCTION_INVALID;

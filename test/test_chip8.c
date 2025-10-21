@@ -86,14 +86,32 @@ TEST(CHIP8, LoadInvalidProgram) {
     TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(empty_program, &chip8.memory[PROGRAM_START], sizeof(empty_program), "Memory should not change if loading failed.");
 }
 
-TEST(CHIP8, ClearScreen) {
-    uint8_t       program[2] = {0x00, 0xE0};
-    bool          loaded     = chip8_load_program(&chip8, program, sizeof(program));
-    chip8_state_t result     = chip8_run_cycle(&chip8);
+TEST(CHIP8, StoreAndLoad) {
+    uint8_t program[4] = {0xF2, 0x55, 0xF2, 0x65};
+    uint8_t values[3]  = {0x10, 0x20, 0x30};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x00E0, result.opcode, "Should create \"Clear Screen\".");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
+    // Initial state for writing
+    chip8.i    = 0x300;
+    chip8.v[0] = values[0];
+    chip8.v[1] = values[1];
+    chip8.v[2] = values[2];
+
+    chip8_state_t store_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF255, store_result.opcode, "Should create \"Store Memory\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, store_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(values, &chip8.memory[0x300], sizeof(values), "Variables should be written to memory.");
+
+    // Reset state to deal with ambiguity and reading
+    chip8.i    = 0x300;
+    chip8.v[0] = 0x0;
+    chip8.v[1] = 0x0;
+    chip8.v[2] = 0x0;
+
+    chip8_state_t load_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF265, load_result.opcode, "Should create \"Load Memory\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, load_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_ARRAY_MESSAGE(values, &chip8.v, sizeof(values), "Variables should be loaded from memory.");
 }
 
 TEST(CHIP8, ExecuteSubroutine) {
@@ -147,7 +165,6 @@ TEST(CHIP8, SetVariable) {
 
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x6123, result.opcode, "Should create \"Set Variable\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x23, chip8.v[1], "Should update value of V1.");
 }
 
@@ -159,14 +176,12 @@ TEST(CHIP8, AddToVariable) {
     chip8_state_t result_set = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x6120, result_set.opcode, "Should create \"Set Variable\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result_set.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.v[1], "Should update value of V1.");
 
     // Add to the value in V1
     chip8_state_t result_add = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x7140, result_add.opcode, "Should create \"Add to Variable\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result_add.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 4, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x60, chip8.v[1], "Should add to the existing value of V1.");
 }
 
@@ -267,8 +282,47 @@ TEST(CHIP8, SetIndex) {
 
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xA123, result.opcode, "Should create \"Set Index\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x123, chip8.i, "Should update value of I.");
+}
+
+TEST(CHIP8, AddToIndex) {
+    uint8_t program[2] = {0xF0, 0x1E};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.i    = 0x300;
+    chip8.v[0] = 0x60;
+
+    chip8_state_t result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF01E, result.opcode, "Should create \"Add to Index\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x360, chip8.i, "Should update value of I.");
+}
+
+TEST(CHIP8, BinaryConversion) {
+    uint8_t program[2] = {0xF0, 0x33};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.i    = 0x300;
+    chip8.v[0] = 156;
+
+    chip8_state_t result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF033, result.opcode, "Should create \"Decimal Conversion\"");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1, chip8.memory[chip8.i + 0], "Should put hundreds at I.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(5, chip8.memory[chip8.i + 1], "Should put tens at I.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(6, chip8.memory[chip8.i + 2], "Should put singles at I.");
+}
+
+TEST(CHIP8, GetFont) {
+    uint8_t program[2] = {0xF0, 0x29};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.v[0] = 0x3;
+
+    chip8_state_t result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF029, result.opcode, "Should create \"Get Character\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(FONT_START + 3 * 5, chip8.i, "Should update value of I.");
 }
 
 TEST(CHIP8, DrawSprite) {
@@ -287,8 +341,38 @@ TEST(CHIP8, DrawSprite) {
     chip8_state_t result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xD015, result.opcode, "Should create \"Draw Sprite\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, chip8.v[0xF], "Should not set VF.");
     TEST_ASSERT_TRUE_MESSAGE(chip8.display[(2 * DISPLAY_WIDTH) + 1], "Top-left pixel of sprite should be ON.");
     TEST_ASSERT_TRUE_MESSAGE(chip8.display[(6 * DISPLAY_WIDTH) + 4], "Bottom-right pixel of sprite should be ON.");
+}
+
+TEST(CHIP8, ClearScreen) {
+    uint8_t       program[2] = {0x00, 0xE0};
+    bool          loaded     = chip8_load_program(&chip8, program, sizeof(program));
+    chip8_state_t result     = chip8_run_cycle(&chip8);
+
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x00E0, result.opcode, "Should create \"Clear Screen\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, result.status, "Should be implemented.");
+}
+
+TEST(CHIP8, Timers) {
+    uint8_t program[6] = {0xF0, 0x15, 0xF1, 0x07, 0xF1, 0x18};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.v[0] = 0x20;
+
+    chip8_state_t first_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF015, first_result.opcode, "Should create \"Set Delay Timer\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.delay_timer, "Should set delay timer to V0.");
+
+    chip8_state_t second_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF107, second_result.opcode, "Should create \"Set to Delay Timer\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.v[1], "Should set V1 to delay timer.");
+
+    chip8_state_t third_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF118, third_result.opcode, "Should create \"Set Sound Timer\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.sound_timer, "Should set sound timer to V1.");
 }

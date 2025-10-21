@@ -179,3 +179,15 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
  * @returns If the opcode was successfully executed
  */
 static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes miscellaneous (0xFxxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is F.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result);
