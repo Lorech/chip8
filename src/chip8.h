@@ -167,3 +167,15 @@ static bool chip8_execute_arithmetic_instruction(chip8_t *chip8, chip8_state_t *
  * @returns If the opcode was successfully executed
  */
 static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes keypress (0xExxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is E.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result);

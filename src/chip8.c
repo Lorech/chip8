@@ -140,6 +140,8 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
             return true;
         case 0xD: // Draw
             return chip8_execute_draw_instruction(chip8, result);
+        case 0xE: // Skip if Key
+            return chip8_execute_keypress_instruction(chip8, result);
         default:
             // TODO: Change to CHIP8_INSTRUCTION_INVALID
             result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
@@ -254,4 +256,20 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
 
     result->frame_buffer_dirty = true;
     return true;
+}
+
+static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result) {
+    uint8_t *x = &chip8->v[N2(result->opcode)];
+
+    switch (B2(result->opcode)) {
+        case 0x9E:
+        case 0xA1:
+            // TODO: Implement when keypress handling has been added
+            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
+            return false;
+        default:
+            // Remaining instructions do not resolve
+            result->status = CHIP8_INSTRUCTION_INVALID;
+            return false;
+    }
 }
