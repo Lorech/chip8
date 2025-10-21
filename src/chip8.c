@@ -76,9 +76,9 @@ static bool chip8_fetch_instruction(chip8_t *chip8, chip8_state_t *result) {
 
 static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
     switch (N1(result->opcode)) {
-        case 0x0:
+        case 0x0: // System Call
             return chip8_execute_system_instruction(chip8, result);
-        case 0x1:
+        case 0x1: // Jump to Address
             chip8->pc = MA(result->opcode);
             return true;
         case 0x2: // Execute Subroutine
@@ -90,16 +90,16 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
                 result->status = CHIP8_STACK_EMPTY;
                 return false;
             }
-        case 0x6:
+        case 0x6: // Set Variable
             chip8->v[N2(result->opcode)] = B2(result->opcode);
             return true;
-        case 0x7:
+        case 0x7: // Add to Variable
             chip8->v[N2(result->opcode)] += B2(result->opcode);
             return true;
-        case 0xA:
+        case 0xA: // Set Index to Address
             chip8->i = MA(result->opcode);
             return true;
-        case 0xD:
+        case 0xD: // Draw
             return chip8_execute_draw_instruction(chip8, result);
         default:
             // TODO: Change to CHIP8_INSTRUCTION_INVALID
