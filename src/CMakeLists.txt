@@ -40,9 +40,11 @@ if (${PLATFORM} STREQUAL "Web")
 endif()
 
 if (APPLE)
-    target_link_libraries(${EMULATOR_EXE} "-framework IOKit")
-    target_link_libraries(${EMULATOR_EXE} "-framework Cocoa")
-    target_link_libraries(${EMULATOR_EXE} "-framework OpenGL")
+    target_link_libraries(${EMULATOR_EXE} PRIVATE
+        "-framework IOKit"
+        "-framework Cocoa"
+        "-framework OpenGL"
+    )
 endif()
 
 set_target_properties(${EMULATOR_EXE} PROPERTIES
