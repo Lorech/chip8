@@ -17,17 +17,12 @@ list(FILTER CORE_SOURCES EXCLUDE REGEX "main\\.c$")
 add_library(${CORE_LIB} STATIC ${CORE_SOURCES})
 
 target_include_directories(${CORE_LIB} PUBLIC
-    ${PROJECT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # Desktop Emulator
 
 add_executable(${EMULATOR_EXE} main.c)
-
-target_include_directories(${EMULATOR_EXE} PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
-)
 
 target_link_libraries(${EMULATOR_EXE} PRIVATE
     ${CORE_LIB}
