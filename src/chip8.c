@@ -8,7 +8,8 @@
 
 void chip8_init(chip8_t *chip8) {
     memset(chip8, 0, sizeof(chip8_t));
-    chip8->pc = PROGRAM_START;
+    chip8->pc            = PROGRAM_START;
+    chip8->stack_pointer = -1;
     chip8_load_font(chip8, DEFAULT_FONT);
 }
 
@@ -80,6 +81,15 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0x1:
             chip8->pc = MA(result->opcode);
             return true;
+        case 0x2: // Execute Subroutine
+            if (chip8->stack_pointer < STACK_SIZE - 1) {
+                chip8->stack[++chip8->stack_pointer] = chip8->pc;
+                chip8->pc                            = MA(result->opcode);
+                return true;
+            } else {
+                result->status = CHIP8_STACK_EMPTY;
+                return false;
+            }
         case 0x6:
             chip8->v[N2(result->opcode)] = B2(result->opcode);
             return true;
@@ -105,6 +115,14 @@ static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *resu
         case 0x00E0: // Clear Screen
             memset(chip8->display, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
             return true;
+        case 0x00EE: // Return from Subroutine
+            if (chip8->stack_pointer >= 0) {
+                chip8->pc = chip8->stack[chip8->stack_pointer--];
+                return true;
+            } else {
+                result->status = CHIP8_STACK_EMPTY;
+                return false;
+            }
         default:
             // All other opcodes execute native machine code at address 0xNNN
             result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;

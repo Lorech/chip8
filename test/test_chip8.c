@@ -96,6 +96,24 @@ TEST(CHIP8, ClearScreen) {
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should advance PC.");
 }
 
+TEST(CHIP8, ExecuteSubroutine) {
+    uint8_t program[6] = {0x22, 0x04, 0x00, 0xE0, 0x00, 0xEE};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8_state_t call_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x2204, call_result.opcode, "Should create \"Execute Subroutine\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, call_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x204, chip8.pc, "Should jump PC to provided address.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0, chip8.stack_pointer, "Should increment stack pointer.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x202, chip8.stack[0], "Should push PC to stack.");
+
+    chip8_state_t return_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x00EE, return_result.opcode, "Should create \"Return from Subroutine\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, return_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x202, chip8.pc, "Should jump PC to stored address.");
+    TEST_ASSERT_EQUAL_INT8_MESSAGE(-1, chip8.stack_pointer, "Should decrement stack pointer.");
+}
+
 TEST(CHIP8, Jump) {
     uint8_t       program[2] = {0x11, 0x23};
     bool          loaded     = chip8_load_program(&chip8, program, sizeof(program));
