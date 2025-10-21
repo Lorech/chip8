@@ -111,7 +111,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
     return true;
 }
 
-bool chip8_draw_sprite(
+static bool chip8_draw_sprite(
     chip8_t *chip8,
     uint8_t  x,
     uint8_t  y,
