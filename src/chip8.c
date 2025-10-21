@@ -22,7 +22,7 @@ bool chip8_load_font(chip8_t *chip8, font_type_t type) {
     if (!font.data) {
         LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load empty font.");
         return false;
-    } else if (MEMORY_SIZE - FONT_START > font.size) {
+    } else if (MEMORY_SIZE - FONT_START < font.size) {
         LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load oversized font.");
         return false;
     }
@@ -36,7 +36,7 @@ bool chip8_load_program(chip8_t *chip8, const uint8_t *program, uint16_t size) {
     if (!program) {
         LOG_WARN(LOG_SUBSYS_MEMORY, "Attempted to load empty program.");
         return false;
-    } else if (MEMORY_SIZE - PROGRAM_START > size) {
+    } else if (MEMORY_SIZE - PROGRAM_START < size) {
         LOG_ERROR(LOG_SUBSYS_MEMORY, "Attempted to load oversized program.");
         return false;
     }
