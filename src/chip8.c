@@ -118,17 +118,18 @@ static bool chip8_draw_sprite(
     uint8_t  h,
     uint8_t *sprite
 ) {
-    // Clamp the starting position within the screen.
+    // Starting position wraps across the screen
     x = x & (DISPLAY_WIDTH - 1);
     y = y & (DISPLAY_HEIGHT - 1);
 
     bool vf = false;
 
-    // Draw byte-by-byte.
+    // Iterate sprites byte-by-byte
     for (uint8_t j = 0; j < h; ++j) {
         uint8_t row = sprite[j];
+        // Iterate pixels bit-by-bit
         for (uint8_t i = 0; i < 8; ++i) {
-            // Sprites do not wrap within the screen.
+            // Sprites do not wrap across the screen
             if (x + i >= DISPLAY_WIDTH || y + j >= DISPLAY_HEIGHT) continue;
             // Draw left-to-right (as opposed to 1 << i)
             bool  p   = row & (0x80 >> i);
