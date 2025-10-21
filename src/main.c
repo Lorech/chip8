@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "chip8.h"
 #include "raylib.h"
@@ -17,8 +18,9 @@ int main(int argc, char **argv) {
     fread(program, 1, MEMORY_SIZE - PROGRAM_START, f);
     fclose(f);
 
-    chip8_t chip8;
-    chip8_init(&chip8);
+    chip8_t  chip8;
+    uint32_t seed = time(NULL);
+    chip8_init(&chip8, seed);
     chip8_load_program(&chip8, program, sizeof(program));
 
     SetTargetFPS(FRAMES_PER_SECOND);

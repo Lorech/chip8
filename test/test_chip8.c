@@ -7,7 +7,7 @@ TEST_GROUP(CHIP8);
 static chip8_t chip8;
 
 TEST_SETUP(CHIP8) {
-    chip8_init(&chip8);
+    chip8_init(&chip8, 1);
 }
 
 TEST_TEAR_DOWN(CHIP8) {}

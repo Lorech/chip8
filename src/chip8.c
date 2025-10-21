@@ -1,17 +1,19 @@
 #include "chip8.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "bitmask.h"
 #include "font.h"
 #include "log.h"
 
-void chip8_init(chip8_t *chip8) {
+void chip8_init(chip8_t *chip8, uint32_t seed) {
     memset(chip8, 0, sizeof(chip8_t));
     chip8->pc            = PROGRAM_START;
     chip8->stack_pointer = -1;
     chip8_load_font(chip8, DEFAULT_FONT);
+    srand(seed);
 }
 
 bool chip8_load_font(chip8_t *chip8, font_type_t type) {
@@ -44,7 +46,7 @@ bool chip8_load_program(chip8_t *chip8, const uint8_t *program, uint16_t size) {
     }
 
     font_type_t existing_font = chip8->font;
-    chip8_init(chip8);
+    chip8_init(chip8, chip8->seed);
     chip8_load_font(chip8, existing_font);
     memcpy(&chip8->memory[PROGRAM_START], program, size);
     return true;
@@ -133,6 +135,9 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
 #endif
             return true;
             // clang-format on
+        case 0xC: // RNG
+            chip8->v[N2(result->opcode)] = rand() & B2(result->opcode);
+            return true;
         case 0xD: // Draw
             return chip8_execute_draw_instruction(chip8, result);
         default:

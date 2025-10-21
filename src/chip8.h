@@ -49,18 +49,21 @@ typedef struct {
     bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
     // Meta-state for debugging and configuration
     font_type_t font; // Active font
+    uint32_t    seed; // Seed for the internal RNG
 } chip8_t;
 
 /**
  * Initializes the CHIP-8.
  *
  * In addition to allocating memory for the emulator, this function also
- * ensures that the emulator is correctly reset to its default state, and
- * loads the configured `DEFAULT_FONT` into memory.
+ * ensures that the emulator is correctly reset to its default state,
+ * loads the configured `DEFAULT_FONT` into memory, and seeds the internal
+ * random number generator using the provided seed.
  *
  * @param chip8 - The CHIP-8 to initialize
+ * @param seed - A seed to use for random number generation
  */
-void chip8_init(chip8_t *chip8);
+void chip8_init(chip8_t *chip8, uint32_t seed);
 
 /**
  * Loads the requested font into memory.
