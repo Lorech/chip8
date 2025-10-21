@@ -135,6 +135,7 @@ static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *resu
     switch (result->opcode) {
         case 0x00E0: // Clear Screen
             memset(chip8->display, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
+            result->frame_buffer_dirty = true;
             return true;
         case 0x00EE: // Return from Subroutine
             if (chip8->stack_pointer >= 0) {
