@@ -89,7 +89,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
                 chip8->pc                            = MA(result->opcode);
                 return true;
             } else {
-                result->status = CHIP8_STACK_EMPTY;
+                result->status = CHIP8_STACK_FULL;
                 return false;
             }
         case 0x3: // Skip if Variable Equals
