@@ -271,7 +271,7 @@ TEST(CHIP8, Shift) {
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x800E, second_result.opcode, "Should create \"Shift Left\".");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00001000, chip8.v[0], "Should shift V0 left.");
 }
 
@@ -368,11 +368,11 @@ TEST(CHIP8, Timers) {
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF107, second_result.opcode, "Should create \"Set to Delay Timer\".");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.v[1], "Should set V1 to delay timer.");
 
     chip8_state_t third_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0xF118, third_result.opcode, "Should create \"Set Sound Timer\".");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, third_result.status, "Should be implemented.");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x20, chip8.sound_timer, "Should set sound timer to V1.");
 }
