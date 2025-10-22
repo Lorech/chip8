@@ -13,24 +13,19 @@
 #define DISPLAY_HEIGHT    32         // Per specification; scaled by driver
 #define FRAMES_PER_SECOND 60         // Per specification
 
-// IPS is configurable as contemporary hardware was running the
-// CHIP-8 at various speeds with no individually defined standard.
-// It seems like 500-600 IPS was what hardware from the time would
-// hit, while 700 is a value more accepted for modern programs.
-#ifndef INSTRUCTIONS_PER_SECOND
-#define INSTRUCTIONS_PER_SECOND 700
-#endif
-
 typedef enum {
     CHIP8_OK = 0,
     CHIP8_FETCH_FAILED,
     CHIP8_INSTRUCTION_INVALID,
     CHIP8_INSTRUCTION_NOT_IMPLEMENTED,
+    CHIP8_STACK_EMPTY,
+    CHIP8_STACK_FULL,
 } chip8_status_t;
 
 typedef struct {
-    chip8_status_t status; // Latest emulator status
-    uint16_t       opcode; // Last processed opcode
+    chip8_status_t status;             // Latest emulator status
+    uint16_t       opcode;             // Last processed opcode
+    bool           frame_buffer_dirty; // If the display changed and must redraw
 } chip8_state_t;
 
 typedef struct {
@@ -40,24 +35,27 @@ typedef struct {
     uint16_t i;                                       // Arbitrary address within memory
     uint8_t  v[16];                                   // Arbitrary variable registers
     uint16_t stack[16];                               // Subroutine return addresses
-    uint8_t  stack_pointer;                           // Current position within stack
+    int8_t   stack_pointer;                           // Current position within stack
     uint8_t  delay_timer;                             // Value of delay timer
     uint8_t  sound_timer;                             // Value of sound timer
     bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
     // Meta-state for debugging and configuration
     font_type_t font; // Active font
+    uint32_t    seed; // Seed for the internal RNG
 } chip8_t;
 
 /**
  * Initializes the CHIP-8.
  *
  * In addition to allocating memory for the emulator, this function also
- * ensures that the emulator is correctly reset to its default state, and
- * loads the configured `DEFAULT_FONT` into memory.
+ * ensures that the emulator is correctly reset to its default state,
+ * loads the configured `DEFAULT_FONT` into memory, and seeds the internal
+ * random number generator using the provided seed.
  *
  * @param chip8 - The CHIP-8 to initialize
+ * @param seed - A seed to use for random number generation
  */
-void chip8_init(chip8_t *chip8);
+void chip8_init(chip8_t *chip8, uint32_t seed);
 
 /**
  * Loads the requested font into memory.
@@ -127,22 +125,61 @@ static bool chip8_fetch_instruction(chip8_t *cpu, chip8_state_t *result);
 static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result);
 
 /**
- * Draws a sprite to the display.
+ * Processes system (0x0xxx) instructions.
  *
- * Corresponds to the 0xDxxx function of the CHIP-8. The coordinate values
- * must be given in terms of actual value instead of variable indices.
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is 0.
  *
- * @param chip8 - The CHIP-8 to draw to
- * @param x - The x coordinate to start drawing from
- * @param y - The y coordinate to start drawing from
- * @param size - The size of the sprite (should match the size of *sprite)
- * @param sprite - The sprite data to draw
- * @returns The new value of the flag register after drawing
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
  */
-static bool chip8_draw_sprite(
-    chip8_t *chip8,
-    uint8_t  x,
-    uint8_t  y,
-    uint8_t  h,
-    uint8_t *sprite
-);
+static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes arithmetic (0x8xxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is 8.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_arithmetic_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes drawing (0xDxxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is D.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes keypress (0xExxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is E.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result);
+
+/**
+ * Processes miscellaneous (0xFxxx) instructions.
+ *
+ * Behaves in the same way as `chip8_execute_instruction`, except it only
+ * handles the instructions whose first digit is F.
+ *
+ * @param chip8 - The CHIP-8 to execute the instruction
+ * @param result - The end result of running the entire instruction cycle
+ * @returns If the opcode was successfully executed
+ */
+static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result);
