@@ -114,7 +114,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0x7: // Add to Variable
             chip8->v[N2(result->opcode)] += B2(result->opcode);
             return true;
-        case 0x8: // Arithemtic & Logic
+        case 0x8: // Arithmetic & Logic
             return chip8_execute_arithmetic_instruction(chip8, result);
         case 0x9: // Skip if Variables Not Equal
             if (chip8->v[N2(result->opcode)] != chip8->v[N3(result->opcode)]) {
@@ -299,7 +299,7 @@ static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result
         case 0x29: // Get Character
             chip8->i = FONT_START + 5 * ((*x) & 0xF);
             return true;
-        case 0x33: // Decimal Coversion
+        case 0x33: // Decimal Conversion
             chip8->memory[chip8->i + 0] = *x / 100 % 10;
             chip8->memory[chip8->i + 1] = *x / 10 % 10;
             chip8->memory[chip8->i + 2] = *x / 1 % 10;

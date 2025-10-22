@@ -42,7 +42,7 @@ cmake -S . -B build -DBUILD_TESTS=off
 
 ### Unit Tests (`BUILD_TESTS`)
 
-If the unit test suite should be built for compilation. It requires an additional dependency to be downloaded and depends on Python being installed on the system to run a code generator, which may be too much hassle if you don't intend to expand emulator functionalty.
+If the unit test suite should be built for compilation. It requires an additional dependency to be downloaded and depends on Python being installed on the system to run a code generator, which may be too much hassle if you don't intend to expand emulator functionality.
 
 ## Configuration
 
@@ -54,7 +54,7 @@ cmake -S . -B build -DENABLE_LOGS=off
 
 ### `INSTRUCTIONS_PER_SECOND`
 
-The number of instructions that the emulator should target for executing in a single second. Contemporary hardware varied in their abilities to run the interpreter, so different games were created with different assumptions to the capabilites of the hardware. This option essentially limits the clock speed of the emulator, and might require adjustment for individual games.
+The number of instructions that the emulator should target for executing in a single second. Contemporary hardware varied in their abilities to run the interpreter, so different games were created with different assumptions to the capabilities of the hardware. This option essentially limits the clock speed of the emulator, and might require adjustment for individual games.
 
 If not provided, defaults to `700`. The recommended value is between 500 and 700.
 
