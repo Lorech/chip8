@@ -13,14 +13,6 @@
 #define DISPLAY_HEIGHT    32         // Per specification; scaled by driver
 #define FRAMES_PER_SECOND 60         // Per specification
 
-// IPS is configurable as contemporary hardware was running the
-// CHIP-8 at various speeds with no individually defined standard.
-// It seems like 500-600 IPS was what hardware from the time would
-// hit, while 700 is a value more accepted for modern programs.
-#ifndef INSTRUCTIONS_PER_SECOND
-#define INSTRUCTIONS_PER_SECOND 700
-#endif
-
 typedef enum {
     CHIP8_OK = 0,
     CHIP8_FETCH_FAILED,

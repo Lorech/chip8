@@ -3,9 +3,6 @@
 #include <stdint.h>
 
 #define FONT_START 0x50 // Memory address; general convention
-#ifndef DEFAULT_FONT
-#define DEFAULT_FONT FONT_CHIP48
-#endif
 
 typedef enum {
     FONT_CHIP48,

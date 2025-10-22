@@ -128,7 +128,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
         case 0xB: // Jump with Offset
             // clang-format off
             // TODO: Make this behavior configurable at runtime.
-#ifdef LEGACY_JUMP_BEHAVIOR
+#ifdef LEGACY_OFFSET_JUMP_BEHAVIOR
             chip8->pc = MA(result->opcode) + chip8->v[0];
 #else
             chip8->pc = MA(result->opcode) + chip8->v[N2(result->opcode)];
