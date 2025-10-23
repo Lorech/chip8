@@ -18,6 +18,15 @@ void platform_init(uint8_t width, uint8_t height, uint8_t fps);
 void platform_close(void);
 
 /**
+ * Sleep for a fixed amount of time.
+ *
+ * Avoid CPU churn while running an empty main loop.
+ *
+ * @param seconds - The number of seconds to sleep for
+ */
+void platform_sleep(double seconds);
+
+/**
  * Gets the current timestamp from the system's clock.
  *
  * @returns The current timestamp

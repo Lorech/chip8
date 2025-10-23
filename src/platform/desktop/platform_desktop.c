@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #include "platform.h"
 #include "raylib.h"
 
@@ -52,6 +58,14 @@ void platform_init(uint8_t width, uint8_t height, uint8_t fps) {
 void platform_close() {
     CloseAudioDevice();
     CloseWindow();
+}
+
+void platform_sleep(double seconds) {
+#ifdef _WIN32
+    Sleep(seconds / 1000);
+#else
+    usleep(seconds / 1000000000);
+#endif
 }
 
 uint64_t platform_get_time(void) {
