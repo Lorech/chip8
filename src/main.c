@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     chip8_load_program(&chip8, program, sizeof(program));
 
     double cpu_tick   = 1.0 / INSTRUCTIONS_PER_SECOND;
-    double clock_tick = 1.0 / 60;
+    double clock_tick = 1.0 / 1.0;
 
     double time             = platform_get_time();
     double next_cpu_cycle   = time;
@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
     // TODO: Figure out how to prevent this from exploding the CPU cross-platform
     do {
-        uint64_t time = platform_get_time();
+        double time = platform_get_time();
 
         if (time > next_cpu_cycle) {
             chip8_state_t state = chip8_run_cycle(&chip8);
