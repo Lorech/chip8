@@ -63,9 +63,9 @@ void platform_close() {
 
 void platform_sleep(double seconds) {
 #ifdef _WIN32
-    Sleep(seconds / 1000);
+    Sleep(seconds * 1000);
 #else
-    usleep(seconds / 1000000000);
+    usleep(seconds * 1000000);
 #endif
 }
 
