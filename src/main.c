@@ -1,10 +1,11 @@
+#include <stdint.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "chip8.h"
-#include "raylib.h"
+#include "platform.h"
 
 int main(int argc, char **argv) {
+    // TODO: Move ROM loading to platform layer
     if (argc < 2) {
         printf("No ROM path provided! Exiting.\n");
         return 1;
@@ -18,29 +19,39 @@ int main(int argc, char **argv) {
     fread(program, 1, MEMORY_SIZE - PROGRAM_START, f);
     fclose(f);
 
-    chip8_t  chip8;
-    uint32_t seed = time(NULL);
-    chip8_init(&chip8, seed);
+    uint64_t seed = platform_get_time();
+    platform_seed_rng(seed);
+    platform_init(DISPLAY_WIDTH, DISPLAY_HEIGHT, FRAMES_PER_SECOND);
+
+    chip8_t chip8;
+    chip8_init(&chip8, seed); // TODO: Use platform RNG
     chip8_load_program(&chip8, program, sizeof(program));
 
-    SetTargetFPS(FRAMES_PER_SECOND);
-    InitWindow(DISPLAY_WIDTH, DISPLAY_HEIGHT, "CHIP-8");
+    double cpu_tick   = 1.0 / INSTRUCTIONS_PER_SECOND;
+    double clock_tick = 1.0 / 60;
 
-    while (!WindowShouldClose()) {
-        BeginDrawing();
+    double time             = platform_get_time();
+    double next_cpu_cycle   = time;
+    double next_clock_cycle = time;
 
-        // TODO: Don't rely on FPS for chip8 cycles.
-        chip8_state_t state = chip8_run_cycle(&chip8);
-        for (uint8_t x = 0; x < DISPLAY_WIDTH; ++x) {
-            for (uint8_t y = 0; y < DISPLAY_HEIGHT; ++y) {
-                if (chip8.display[y * DISPLAY_WIDTH + x]) {
-                    DrawPixel(x, y, RAYWHITE);
-                }
-            }
+    // TODO: Figure out how to prevent this from exploding the CPU cross-platform
+    do {
+        uint64_t time = platform_get_time();
+
+        if (time > next_cpu_cycle) {
+            chip8_state_t state = chip8_run_cycle(&chip8);
+            if (state.frame_buffer_dirty) platform_draw_display(chip8.display);
+            if (state.sound_timer_set) platform_play_audio();
+            next_cpu_cycle += cpu_tick;
         }
 
-        EndDrawing();
-    }
+        if (time > next_clock_cycle) {
+            if (chip8.sound_timer > 0) chip8.sound_timer -= 1;
+            if (chip8.delay_timer > 0) chip8.delay_timer -= 1;
+            if (chip8.playing_sound && chip8.sound_timer == 0) platform_stop_audio();
+            next_clock_cycle += clock_tick;
+        }
+    } while (true);
 
-    CloseWindow();
+    platform_close();
 }

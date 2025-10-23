@@ -26,6 +26,7 @@ typedef struct {
     chip8_status_t status;             // Latest emulator status
     uint16_t       opcode;             // Last processed opcode
     bool           frame_buffer_dirty; // If the display changed and must redraw
+    bool           sound_timer_set;    // If the sound timer was enabled
 } chip8_state_t;
 
 typedef struct {
@@ -40,8 +41,9 @@ typedef struct {
     uint8_t  sound_timer;                             // Value of sound timer
     bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
     // Meta-state for debugging and configuration
-    font_type_t font; // Active font
-    uint32_t    seed; // Seed for the internal RNG
+    font_type_t font;          // Active font
+    uint32_t    rng_seed;      // Seed for the internal RNG;  TODO: Use platform RNG
+    bool        playing_sound; // If sound is currently being played
 } chip8_t;
 
 /**
@@ -53,9 +55,9 @@ typedef struct {
  * random number generator using the provided seed.
  *
  * @param chip8 - The CHIP-8 to initialize
- * @param seed - A seed to use for random number generation
+ * @param rng_seed - A seed to use for random number generation
  */
-void chip8_init(chip8_t *chip8, uint32_t seed);
+void chip8_init(chip8_t *chip8, uint32_t rng_seed);
 
 /**
  * Loads the requested font into memory.

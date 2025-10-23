@@ -1,6 +1,21 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
+
+/**
+ * Initialize the platform's hardware state before using it.
+ *
+ * @param width - The width of the display
+ * @param height - The height of the display
+ * @param fps - The frames per second the display should target
+ */
+void platform_init(uint8_t width, uint8_t height, uint8_t fps);
+
+/**
+ * Clear the platform's hardware state before disabling it.
+ */
+void platform_close(void);
 
 /**
  * Gets the current timestamp from the system's clock.
@@ -29,10 +44,8 @@ uint8_t platform_rng(void);
  * Draws a new frame buffer on the screen.
  *
  * @param buffer - The frame buffer to display
- * @param width - The width of the display
- * @param height - The height of the display
  */
-void platform_draw_display(uint8_t *buffer, uint8_t width, uint8_t height);
+void platform_draw_display(bool *buffer);
 
 /**
  * Starts playing a sound if one is not already active.
