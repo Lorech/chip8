@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     platform_init(DISPLAY_WIDTH, DISPLAY_HEIGHT, FRAMES_PER_SECOND);
 
     chip8_t chip8;
-    chip8_init(&chip8, seed); // TODO: Use platform RNG
+    chip8_init(&chip8, platform_rng);
     chip8_load_program(&chip8, program, sizeof(program));
 
     double target_frame_time   = 1.0 / FRAMES_PER_SECOND;
