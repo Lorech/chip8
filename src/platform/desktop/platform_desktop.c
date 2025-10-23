@@ -82,23 +82,23 @@ uint8_t platform_rng(void) {
 }
 
 bool platform_load_rom(uint8_t *rom, size_t max_size, int argc, char **argv) {
-    if (argc < 2) return NULL;
+    if (argc < 2) return false;
 
     char *path = argv[1];
-    if (!path) return NULL;
+    if (!path) return false;
 
     FILE *infile = fopen(path, "rb");
-    if (!infile) return NULL;
+    if (!infile) return false;
 
     size_t result = fread(rom, sizeof(uint8_t), max_size, infile);
 
     if (ferror(infile)) {
         fclose(infile);
-        return NULL;
+        return false;
     }
 
     fclose(infile);
-    return rom;
+    return true;
 }
 
 void platform_draw_display(bool *buffer) {
