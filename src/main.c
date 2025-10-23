@@ -41,14 +41,20 @@ int main(int argc, char **argv) {
         if (time > next_cpu_cycle) {
             chip8_state_t state = chip8_run_cycle(&chip8);
             if (state.frame_buffer_dirty) platform_draw_display(chip8.display);
-            if (state.sound_timer_set) platform_play_audio();
+            if (state.sound_timer_set) {
+                chip8.playing_sound = true;
+                platform_play_audio();
+            }
             next_cpu_cycle += cpu_tick;
         }
 
         if (time > next_clock_cycle) {
             if (chip8.sound_timer > 0) chip8.sound_timer -= 1;
             if (chip8.delay_timer > 0) chip8.delay_timer -= 1;
-            if (chip8.playing_sound && chip8.sound_timer == 0) platform_stop_audio();
+            if (chip8.playing_sound && chip8.sound_timer == 0) {
+                chip8.playing_sound = false;
+                platform_stop_audio();
+            }
             next_clock_cycle += clock_tick;
         }
     } while (true);

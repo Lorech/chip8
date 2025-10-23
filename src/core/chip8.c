@@ -293,6 +293,7 @@ static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result
             return true;
         case 0x18: // Set Sound Timer
             chip8->sound_timer = *x;
+            if (*x > 0) result->sound_timer_set = true;
             return true;
         case 0x1E: // Add to Index
             chip8->i += *x;
