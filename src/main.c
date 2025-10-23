@@ -5,27 +5,21 @@
 #include "platform.h"
 
 int main(int argc, char **argv) {
-    // TODO: Move ROM loading to platform layer
-    if (argc < 2) {
-        printf("No ROM path provided! Exiting.\n");
-        return 1;
-    }
-
-    char   *path = argv[1];
-    FILE   *f;
-    uint8_t program[MEMORY_SIZE - PROGRAM_START];
-
-    f = fopen(path, "rb");
-    fread(program, 1, MEMORY_SIZE - PROGRAM_START, f);
-    fclose(f);
-
     uint64_t seed = platform_get_time();
     platform_seed_rng(seed);
     platform_init(DISPLAY_WIDTH, DISPLAY_HEIGHT, FRAMES_PER_SECOND);
 
+    uint16_t max_rom_size = MEMORY_SIZE - PROGRAM_START;
+    uint8_t  rom[max_rom_size];
+    bool     loaded = platform_load_rom(rom, max_rom_size, argc, argv);
+    if (!loaded) {
+        printf("ERROR: Failed to load ROM.");
+        return 1;
+    }
+
     chip8_t chip8;
     chip8_init(&chip8, platform_rng);
-    chip8_load_program(&chip8, program, sizeof(program));
+    chip8_load_program(&chip8, rom, sizeof(rom));
 
     double target_frame_time   = 1.0 / FRAMES_PER_SECOND;
     double cpu_ticks_per_frame = (double)INSTRUCTIONS_PER_SECOND / FRAMES_PER_SECOND;

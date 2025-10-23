@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 /**
@@ -48,6 +49,21 @@ void platform_seed_rng(uint64_t seed);
  * @returns A random number
  */
 uint8_t platform_rng(void);
+
+/**
+ * Loads a ROM into the application's memory.
+ *
+ * The last two input arguments match to those of `main` to allow loading a
+ * ROM from a file which is provided via CLI arguments when starting the
+ * application.
+ *
+ * @param rom - The loaded ROM
+ * @param max_size - The maximum size permissible for a valid ROM
+ * @param argc - The number of arguments provided to `main`
+ * @param argv - The arguments provided to `main`
+ * @returns If the ROM was loaded successfully
+ */
+bool platform_load_rom(uint8_t *rom, size_t max_size, int argc, char **argv);
 
 /**
  * Draws a new frame buffer on the screen.

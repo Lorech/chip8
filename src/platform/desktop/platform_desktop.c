@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -78,6 +79,26 @@ void platform_seed_rng(uint64_t seed) {
 
 uint8_t platform_rng(void) {
     return (uint8_t)rand();
+}
+
+bool platform_load_rom(uint8_t *rom, size_t max_size, int argc, char **argv) {
+    if (argc < 2) return NULL;
+
+    char *path = argv[1];
+    if (!path) return NULL;
+
+    FILE *infile = fopen(path, "rb");
+    if (!infile) return NULL;
+
+    size_t result = fread(rom, sizeof(uint8_t), max_size, infile);
+
+    if (ferror(infile)) {
+        fclose(infile);
+        return NULL;
+    }
+
+    fclose(infile);
+    return rom;
 }
 
 void platform_draw_display(bool *buffer) {
