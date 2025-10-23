@@ -26,12 +26,6 @@ cmake -S . -B build
 cmake --build build
 ```
 
-3. Run the emulator:
-
-```sh
-./build/bin/chip8 roms/IBM\ Logo.ch8
-```
-
 ## Targets
 
 The emulator core is always built as a static library for inclusion in additional executables. The additional executables can be configured as CMake options using the GUI on Windows, or using build options on macOS/Linux:
@@ -40,9 +34,18 @@ The emulator core is always built as a static library for inclusion in additiona
 cmake -S . -B build -DBUILD_TESTS=off
 ```
 
+### Desktop (`BUILD_DESKTOP`)
+
+The full emulator for use on desktops, powered by a [Raylib](https://www.raylib.com/) backend. To start the emulator, run the compiled executable, providing a path to a valid ROM as an argument:
+
+```sh
+./build/bin/exe_chip8_desktop roms/IBM\ Logo.ch8
+```
+
+
 ### Unit Tests (`BUILD_TESTS`)
 
-If the unit test suite should be built for compilation. It requires an additional dependency to be downloaded and depends on Python being installed on the system to run a code generator, which may be too much hassle if you don't intend to expand emulator functionality.
+Unit tests for the CHIP-8 implementation. For more details on testing, see [Testing](#testing).
 
 ## Configuration
 
@@ -95,9 +98,9 @@ If not provided, defaults to `ON`.
 
 ## Testing
 
-The project utilizes the [Unity framework](https://github.com/ThrowTheSwitch/Unity) to provide unit testing capabilities. Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator is included for generating the test runners using this approach.
+The project utilizes the [Unity framework](https://github.com/ThrowTheSwitch/Unity) to provide unit testing capabilities. Due to being entirely self-sufficient, the test suite is compiled into a single executable using test groups from the [Fixtures add-on](https://github.com/ThrowTheSwitch/Unity/tree/master/extras/fixture). A custom code generator written in Python is included for generating the test runners using this approach.
 
-To run the code generator and compile the test executable, the `BUILD_TESTS` option must be enabled in CMake.
+To run the code generator and compile the test executable, the `BUILD_TESTS` option must be enabled in CMake. Running the generator requires Python to be available on the system.
 
 1. Write a test group, based on [Unity's second example](https://github.com/ThrowTheSwitch/Unity/tree/v2.6.1/examples/example_2) or any of the existing test suites in the project;
 2. Generate the runner for the test group and update `main` for the test suite:
