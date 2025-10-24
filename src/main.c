@@ -4,6 +4,8 @@
 #include "chip8.h"
 #include "platform.h"
 
+#define SECOND 1000000 // 1 second in microseconds
+
 int main(int argc, char **argv) {
     uint64_t seed = platform_get_time();
     platform_seed_rng(seed);
@@ -20,19 +22,19 @@ int main(int argc, char **argv) {
     chip8_init(&chip8, platform_rng);
     chip8_load_program(&chip8, rom, sizeof(rom));
 
-    // Draw the display once to ensure it is at a stable, empty state.
+    // Draw the display once to ensure it is at a stable, empty state
     platform_draw_display(chip8.display);
 
-    double target_frame_time   = 1.0 / FRAMES_PER_SECOND;
-    double cpu_ticks_per_frame = (double)INSTRUCTIONS_PER_SECOND / FRAMES_PER_SECOND;
+    uint64_t target_frame_time   = SECOND / FRAMES_PER_SECOND;
+    uint64_t cpu_ticks_per_frame = INSTRUCTIONS_PER_SECOND / FRAMES_PER_SECOND;
 
-    double last_time       = platform_get_time();
-    double next_clock_tick = last_time + 1.0;
+    uint64_t last_time       = platform_get_time();
+    uint64_t next_clock_tick = last_time + SECOND;
 
     do {
-        double time       = platform_get_time();
-        double frame_time = time - last_time;
-        last_time         = time;
+        uint64_t time       = platform_get_time();
+        uint64_t frame_time = time - last_time;
+        last_time           = time;
         if (frame_time < target_frame_time) {
             platform_sleep(target_frame_time - frame_time);
         }
@@ -55,7 +57,7 @@ int main(int argc, char **argv) {
                 chip8.playing_sound = false;
                 platform_stop_audio();
             }
-            next_clock_tick += 1.0;
+            next_clock_tick += SECOND;
         }
     } while (true);
 

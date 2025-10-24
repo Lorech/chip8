@@ -23,14 +23,14 @@ void platform_close(void);
  *
  * Avoid CPU churn while running an empty main loop.
  *
- * @param seconds - The number of seconds to sleep for
+ * @param microseconds - The number of microseconds to sleep for
  */
-void platform_sleep(double seconds);
+void platform_sleep(uint64_t microseconds);
 
 /**
- * Gets the current timestamp from the system's clock.
+ * Gets the current timestamp with microsecond precision from the system.
  *
- * @returns The current timestamp
+ * @returns The current timestamp in microseconds
  */
 uint64_t platform_get_time(void);
 

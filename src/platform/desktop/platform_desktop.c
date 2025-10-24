@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -35,16 +36,25 @@ void platform_close() {
     CloseWindow();
 }
 
-void platform_sleep(double seconds) {
+void platform_sleep(uint64_t microseconds) {
 #ifdef _WIN32
-    Sleep(seconds * 1000);
+    Sleep(DWORD(microseconds / 1000));
 #else
-    usleep(seconds * 1000000);
+    usleep(microseconds);
 #endif
 }
 
 uint64_t platform_get_time(void) {
-    return time(NULL);
+#ifdef _WIN32
+    LARGE_INTEGER freq, counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return (uint64_t)((counter.QuadPart * 1000000) / freq.QuadPart);
+#else
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    return (uint64_t)ts.tv_sec * 1000000 + (uint64_t)(ts.tv_nsec / 1000);
+#endif
 }
 
 void platform_seed_rng(uint64_t seed) {
