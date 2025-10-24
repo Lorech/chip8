@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     double cpu_ticks_per_frame = (double)INSTRUCTIONS_PER_SECOND / FRAMES_PER_SECOND;
 
     double last_time       = platform_get_time();
-    double next_clock_tick = last_time;
+    double next_clock_tick = last_time + 1.0;
 
     do {
         double time       = platform_get_time();
