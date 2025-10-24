@@ -1,3 +1,6 @@
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "chip8.h"
 #include "font.h"
 #include "unity_fixture.h"
@@ -6,8 +9,13 @@ TEST_GROUP(CHIP8);
 
 static chip8_t chip8;
 
+static uint8_t generate_random_number() {
+    return (uint8_t)rand();
+}
+
 TEST_SETUP(CHIP8) {
-    chip8_init(&chip8, 1);
+    srand(1);
+    chip8_init(&chip8, generate_random_number);
 }
 
 TEST_TEAR_DOWN(CHIP8) {}
