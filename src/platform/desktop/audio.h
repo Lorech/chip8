@@ -1,3 +1,5 @@
+#pragma once
+
 #include "raylib.h"
 
 #define SAMPLE_RATE 44100
@@ -19,7 +21,7 @@ typedef struct {
 // We need to keep a reference to it to correctly loop it for the purposes
 // of this header, but the main platform implementation also needs access
 // to it, so the load is shared by keeping this a pointer.
-static Tone *p_tone;
+extern Tone *p_tone;
 
 /**
  * Initialize the tone that is used as audio playback.
