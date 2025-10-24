@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,34 +8,13 @@
 #include <unistd.h>
 #endif
 
+#include "audio.h"
 #include "platform.h"
 #include "raylib.h"
-
-#define SAMPLE_RATE 44100
-#define FREQUENCY   220.0f
-#define AMPLITUDE   0.25f
-#define BUFFER_SIZE 512
-
-typedef struct {
-    AudioStream stream;
-    bool        active;
-    double      phase;
-    double      increment;
-} Tone;
 
 static uint8_t display_width;
 static uint8_t display_height;
 static Tone    tone;
-
-static void OnAudioStreamUpdate(void *bufferData, unsigned int frames) {
-    float *buffer = (float *)bufferData;
-    for (unsigned int i = 0; i < frames; i++) {
-        float amp = tone.active ? AMPLITUDE : 0.0f;
-        buffer[i] = sin(tone.phase) * amp;
-        tone.phase += tone.increment;
-        if (tone.phase > 2.0 * PI) tone.phase -= 2.0 * PI;
-    }
-}
 
 void platform_init(uint8_t width, uint8_t height, uint8_t fps) {
     display_width  = width;
@@ -48,11 +26,7 @@ void platform_init(uint8_t width, uint8_t height, uint8_t fps) {
     InitWindow(width, height, "CHIP-8");
 
     InitAudioDevice();
-    tone.stream    = LoadAudioStream(SAMPLE_RATE, 32, 1);
-    tone.phase     = 0.0;
-    tone.increment = (2.0 * PI * FREQUENCY) / SAMPLE_RATE;
-    tone.active    = false;
-    SetAudioStreamCallback(tone.stream, OnAudioStreamUpdate);
+    init_tone(&tone);
     PlayAudioStream(tone.stream);
 }
 

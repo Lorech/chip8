@@ -11,6 +11,7 @@ FetchContent_MakeAvailable(raylib)
 
 add_library(${DESKTOP_LIB} STATIC
   platform_desktop.c
+  audio.c
 )
 
 target_include_directories(${DESKTOP_LIB}
