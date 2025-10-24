@@ -9,9 +9,8 @@ int main(int argc, char **argv) {
     platform_seed_rng(seed);
     platform_init(DISPLAY_WIDTH, DISPLAY_HEIGHT, FRAMES_PER_SECOND);
 
-    uint16_t max_rom_size = MEMORY_SIZE - PROGRAM_START;
-    uint8_t  rom[max_rom_size];
-    bool     loaded = platform_load_rom(rom, max_rom_size, argc, argv);
+    uint8_t rom[MEMORY_SIZE - PROGRAM_START];
+    bool    loaded = platform_load_rom(rom, sizeof(rom), argc, argv);
     if (!loaded) {
         printf("ERROR: Failed to load ROM.");
         return 1;
