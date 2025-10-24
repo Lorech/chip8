@@ -4,6 +4,8 @@
 
 #include "raylib.h"
 
+Tone *p_tone;
+
 void init_tone(Tone *tone) {
     p_tone          = tone;
     tone->stream    = LoadAudioStream(SAMPLE_RATE, 32, 1);

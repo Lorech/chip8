@@ -21,6 +21,9 @@ int main(int argc, char **argv) {
     chip8_init(&chip8, platform_rng);
     chip8_load_program(&chip8, rom, sizeof(rom));
 
+    // Draw the display once to ensure it is at a stable, empty state.
+    platform_draw_display(chip8.display);
+
     double target_frame_time   = 1.0 / FRAMES_PER_SECOND;
     double cpu_ticks_per_frame = (double)INSTRUCTIONS_PER_SECOND / FRAMES_PER_SECOND;
 
