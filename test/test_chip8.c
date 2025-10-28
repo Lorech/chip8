@@ -194,7 +194,7 @@ TEST(CHIP8, AddToVariable) {
 }
 
 TEST(CHIP8, SkipStaticEqual) {
-    uint8_t program[6] = {0x30, 0x01, 0x30, 0x02};
+    uint8_t program[4] = {0x30, 0x01, 0x30, 0x02};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
     chip8.v[0] = 0x02;
@@ -202,16 +202,16 @@ TEST(CHIP8, SkipStaticEqual) {
     chip8_state_t first_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x3001, first_result.opcode, "Should create \"Skip if Variable Equals\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip, should advance PC.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip; PC advances once.");
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x3002, second_result.opcode, "Should create \"Skip if Variable Equals\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip, should advance PC twice.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip; PC advances twice.");
 }
 
 TEST(CHIP8, SkipStaticNotEqual) {
-    uint8_t program[6] = {0x40, 0x02, 0x40, 0x01};
+    uint8_t program[4] = {0x40, 0x02, 0x40, 0x01};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
     chip8.v[0] = 0x02;
@@ -219,16 +219,16 @@ TEST(CHIP8, SkipStaticNotEqual) {
     chip8_state_t first_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x4002, first_result.opcode, "Should create \"Skip if Variable Not Equals\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip, should advance PC.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip; PC advances once.");
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x4001, second_result.opcode, "Should create \"Skip if Variable Not Equals\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip, should advance PC twice.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip; PC advances twice.");
 }
 
 TEST(CHIP8, SkipVariablesEqual) {
-    uint8_t program[6] = {0x50, 0x10, 0x50, 0x00};
+    uint8_t program[4] = {0x50, 0x10, 0x50, 0x00};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
     chip8.v[0] = 0x01;
@@ -237,16 +237,16 @@ TEST(CHIP8, SkipVariablesEqual) {
     chip8_state_t first_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x5010, first_result.opcode, "Should create \"Skip if Variables Equal\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip, should advance PC.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip; PC advances once.");
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x5000, second_result.opcode, "Should create \"Skip if Variables Equal\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip, should advance PC twice.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip; PC advances twice.");
 }
 
 TEST(CHIP8, SkipVariablesNotEqual) {
-    uint8_t program[6] = {0x90, 0x00, 0x90, 0x10};
+    uint8_t program[4] = {0x90, 0x00, 0x90, 0x10};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
     chip8.v[0] = 0x01;
@@ -255,12 +255,12 @@ TEST(CHIP8, SkipVariablesNotEqual) {
     chip8_state_t first_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x9000, first_result.opcode, "Should create \"Skip if Variables Not Equal\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip, should advance PC.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 2, chip8.pc, "Should not skip; PC advances once.");
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x9010, second_result.opcode, "Should create \"Skip if Variables Not Equal\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip, should advance PC twice.");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip; PC advances twice.");
 }
 
 // TODO: Add test for legacy/modern shift testing when it is configurable at runtime.
