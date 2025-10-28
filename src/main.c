@@ -39,6 +39,8 @@ int main(int argc, char **argv) {
             platform_sleep(target_frame_time - frame_time);
         }
 
+        chip8.keypad_state = platform_get_keypad();
+
         // CPU advances by x amount of instructions each frame
         for (uint8_t i = 0; i < cpu_ticks_per_frame; ++i) {
             chip8_state_t state = chip8_run_cycle(&chip8);

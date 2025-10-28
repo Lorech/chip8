@@ -262,14 +262,17 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
 }
 
 static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result) {
-    uint8_t *x = &chip8->v[N2(result->opcode)];
+    uint8_t *x          = &chip8->v[N2(result->opcode)];
+    uint8_t  key        = *x & 0xF;
+    bool     is_pressed = (chip8->keypad_state >> key) & 0x1;
 
     switch (B2(result->opcode)) {
-        case 0x9E:
-        case 0xA1:
-            // TODO: Implement when keypress handling has been added
-            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
-            return false;
+        case 0x9E: // Skip if Key Pressed
+            if (is_pressed) chip8->pc += 2;
+            return true;
+        case 0xA1: // Skip if Key Not Presed
+            if (!is_pressed) chip8->pc += 2;
+            return true;
         default:
             // Remaining instructions do not resolve
             result->status = CHIP8_INSTRUCTION_INVALID;
@@ -285,9 +288,19 @@ static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result
             *x = chip8->delay_timer;
             return true;
         case 0x0A: // Get Key
-            // TODO: Implement when keypress handling has been added
-            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
-            return false;
+            if (chip8->keypad_state > 0x0) {
+                // Find the key that was pressed and write to X
+                for (uint8_t i = 0; i < 0xF; ++i) {
+                    if ((chip8->keypad_state >> i) & 0x1) {
+                        *x = i;
+                        break;
+                    }
+                }
+            } else {
+                // Loop until a key is pressed
+                chip8->pc -= 2;
+            }
+            return true;
         case 0x15: // Set Delay Timer
             chip8->delay_timer = *x;
             return true;

@@ -40,8 +40,9 @@ typedef struct {
     uint8_t  delay_timer;                             // Value of delay timer
     uint8_t  sound_timer;                             // Value of sound timer
     bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
-    // Meta-state for debugging and configuration
+    // Meta-state for configuration, debugging, and external activity
     font_type_t font;          // Active font
+    uint16_t    keypad_state;  // Pressed keypad buttons from MSB (F) to LSB (0)
     bool        playing_sound; // If sound is currently being played
 } chip8_t;
 
