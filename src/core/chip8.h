@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "font.h"
+#include "keypad.h"
 
 #define MEMORY_SIZE       (4 * 1024) // 4KB; per specification
 #define STACK_SIZE        16         // Arbitrary value
@@ -12,6 +13,7 @@
 #define DISPLAY_WIDTH     64         // Per specification; scaled by driver
 #define DISPLAY_HEIGHT    32         // Per specification; scaled by driver
 #define FRAMES_PER_SECOND 60         // Per specification
+#define TICKS_PER_SECOND  60         // Per specification
 
 typedef enum {
     CHIP8_OK = 0,
@@ -40,9 +42,11 @@ typedef struct {
     uint8_t  delay_timer;                             // Value of delay timer
     uint8_t  sound_timer;                             // Value of sound timer
     bool     display[DISPLAY_WIDTH * DISPLAY_HEIGHT]; // Active frame buffer
-    // Meta-state for debugging and configuration
-    font_type_t font;          // Active font
-    bool        playing_sound; // If sound is currently being played
+    // Meta-state for configuration, debugging, and external activity
+    font_type_t   font;          // Active font
+    keypad_type_t keypad;        // Active keypad arrangement
+    uint16_t      keypad_state;  // Active keypad buttons relative to active keypad
+    bool          playing_sound; // If sound is currently being played
 } chip8_t;
 
 /**
@@ -50,8 +54,9 @@ typedef struct {
  *
  * In addition to allocating memory for the emulator, this function also
  * ensures that the emulator is correctly reset to its default state,
- * loads the configured `DEFAULT_FONT` into memory, and stores the provided
- * random number generator callback.
+ * loads the configured `DEFAULT_FONT` into memory, sets the configured
+ * `DEFAULT_KEYPAD` as active, and stores the provided random number generator
+ * callback.
  *
  * @param chip8 - The CHIP-8 to initialize
  * @param generator - A callback that generates a random number

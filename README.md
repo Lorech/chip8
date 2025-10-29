@@ -72,6 +72,16 @@ If not provided, defaults to `FONT_CHIP48`. Supports the following options:
 - `FONT_DREAM6800`
 - `FONT_ETI660`
 
+### `DEFAULT_KEYPAD`
+
+The keypad that the emulator should use after starting for the first time. In general, the default option is probably what you will want to use, but alternatives are provided for compatibility purposes. There is no definitive example of relevant keypads - the closest I could find [is this blog article from Tobias L.](https://tobiasvl.github.io/blog/an-emulator-ui/#keypad).
+
+If not provided, defaults to `KEYPAD_COSMACVIP`. Supports the following options:
+
+- `KEYPAD_COSMACVIP`
+- `KEYPAD_DIGITRAN`
+- `KEYPAD_ORIGINAL`
+
 ### `ENABLE_LOGS`
 
 If runtime error logging to `stderr` should be enabled. These logs mostly consist of warnings to the user about using undefined behavior, or misusing instructions. This is largely not necessary if a known good ROM is used.

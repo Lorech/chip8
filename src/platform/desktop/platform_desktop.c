@@ -36,6 +36,10 @@ void platform_close() {
     CloseWindow();
 }
 
+bool platform_should_run_frame() {
+    return !WindowShouldClose();
+}
+
 void platform_sleep(uint64_t microseconds) {
 #ifdef _WIN32
     Sleep(DWORD(microseconds / 1000));
@@ -52,7 +56,7 @@ uint64_t platform_get_time(void) {
     return (uint64_t)((counter.QuadPart * 1000000) / freq.QuadPart);
 #else
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint64_t)ts.tv_sec * 1000000 + (uint64_t)(ts.tv_nsec / 1000);
 #endif
 }
@@ -87,6 +91,7 @@ bool platform_load_rom(uint8_t *rom, size_t max_size, int argc, char **argv) {
 
 void platform_draw_display(bool *buffer) {
     BeginDrawing();
+    ClearBackground(BLACK);
     for (uint8_t x = 0; x < display_width; ++x) {
         for (uint8_t y = 0; y < display_height; ++y) {
             if (buffer[y * display_width + x]) {
@@ -106,6 +111,28 @@ void platform_stop_audio(void) {
 }
 
 uint16_t platform_get_keypad(void) {
-    // TODO: Add implementation.
-    return 0;
+    uint16_t state = 0;
+#ifndef PLATFORM_WEB
+    PollInputEvents(); // On web, inputs register only after checking for them
+#endif
+    if (IsKeyDown(KEY_ONE)) state |= (0x1 << 0x0);
+    if (IsKeyDown(KEY_TWO)) state |= (0x1 << 0x1);
+    if (IsKeyDown(KEY_THREE)) state |= (0x1 << 0x2);
+    if (IsKeyDown(KEY_FOUR)) state |= (0x1 << 0x3);
+    if (IsKeyDown(KEY_Q)) state |= (0x1 << 0x4);
+    if (IsKeyDown(KEY_W)) state |= (0x1 << 0x5);
+    if (IsKeyDown(KEY_E)) state |= (0x1 << 0x6);
+    if (IsKeyDown(KEY_R)) state |= (0x1 << 0x7);
+    if (IsKeyDown(KEY_A)) state |= (0x1 << 0x8);
+    if (IsKeyDown(KEY_S)) state |= (0x1 << 0x9);
+    if (IsKeyDown(KEY_D)) state |= (0x1 << 0xA);
+    if (IsKeyDown(KEY_F)) state |= (0x1 << 0xB);
+    if (IsKeyDown(KEY_Z)) state |= (0x1 << 0xC);
+    if (IsKeyDown(KEY_X)) state |= (0x1 << 0xD);
+    if (IsKeyDown(KEY_C)) state |= (0x1 << 0xE);
+    if (IsKeyDown(KEY_V)) state |= (0x1 << 0xF);
+#ifdef PLATFORM_WEB
+    PollInputEvents();
+#endif
+    return state;
 }

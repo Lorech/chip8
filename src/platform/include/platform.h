@@ -19,6 +19,19 @@ void platform_init(uint8_t width, uint8_t height, uint8_t fps);
 void platform_close(void);
 
 /**
+ * If the program should continue execution.
+ *
+ * This should be used as the condition for running the main loop, waiting on
+ * this function to return `false` to exit out and deinitialize everything.
+ *
+ * Such a scenario may be impossible for some platforms, others may rely on some
+ * external callback, e.g., a window being closed to signal the program to halt.
+ *
+ * @returns If another frame should be executed
+ */
+bool platform_should_run_frame(void);
+
+/**
  * Sleep for a fixed amount of time.
  *
  * Avoid CPU churn while running an empty main loop.
@@ -83,11 +96,25 @@ void platform_play_audio(void);
 void platform_stop_audio(void);
 
 /**
- * Get the current state of the keypad.
+ * Gets the current state of the keypad.
  *
- * Since the CHIP-8 has only 16 inputs, a single 16-bit number is returned,
- * with each bit indicating if the key is pressed or not. The bits are arranged
- * from 16 (MSB) to 0 (LSB).
+ * Since the CHIP-8 keypad only consists of 16 keys, a single 16-bit integer
+ * is returned, where each bit represents a single key being on or off in a
+ * way that is agnostic to the CHIP-8 itself, as several different layouts may
+ * be supported, which can be changed at runtime.
+ *
+ * The returned keypad bits map to the following keypad structure, numbers
+ * indicating bits from least to most significant:
+ *
+ * -------------------------
+ * | 0x0 | 0x1 | 0x2 | 0x3 |
+ * -------------------------
+ * | 0x4 | 0x5 | 0x6 | 0x7 |
+ * -------------------------
+ * | 0x8 | 0x9 | 0xA | 0xB |
+ * -------------------------
+ * | 0xC | 0xD | 0xE | 0xF |
+ * -------------------------
  *
  * @returns The current state of the keypad
  */

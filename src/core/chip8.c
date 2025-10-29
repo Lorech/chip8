@@ -5,6 +5,7 @@
 
 #include "bitmask.h"
 #include "font.h"
+#include "keypad.h"
 #include "log.h"
 
 static uint8_t (*generate_random_number)(void);
@@ -13,6 +14,7 @@ void chip8_init(chip8_t *chip8, uint8_t (*generator)(void)) {
     memset(chip8, 0, sizeof(chip8_t));
     chip8->pc            = PROGRAM_START;
     chip8->stack_pointer = -1;
+    chip8->keypad        = DEFAULT_KEYPAD;
     chip8_load_font(chip8, DEFAULT_FONT);
     generate_random_number = generator;
 }
@@ -157,7 +159,7 @@ static bool chip8_execute_instruction(chip8_t *chip8, chip8_state_t *result) {
 static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *result) {
     switch (result->opcode) {
         case 0x00E0: // Clear Screen
-            memset(chip8->display, 0, DISPLAY_WIDTH * DISPLAY_HEIGHT);
+            memset(chip8->display, 0, sizeof(chip8->display));
             result->frame_buffer_dirty = true;
             return true;
         case 0x00EE: // Return from Subroutine
@@ -176,55 +178,59 @@ static bool chip8_execute_system_instruction(chip8_t *chip8, chip8_state_t *resu
 }
 
 static bool chip8_execute_arithmetic_instruction(chip8_t *chip8, chip8_state_t *result) {
-    uint8_t *x = &chip8->v[N2(result->opcode)];
-    uint8_t *y = &chip8->v[N3(result->opcode)];
-    uint8_t *f = &chip8->v[0xF];
+    uint8_t vx = N2(result->opcode);
+    uint8_t vy = N3(result->opcode);
+    uint8_t x  = chip8->v[vx];
+    uint8_t y  = chip8->v[vy];
+    uint8_t value;
 
     switch (N4(result->opcode)) {
         case 0x0: // Set
-            *x = *y;
+            chip8->v[vx] = y;
             return true;
         case 0x1: // Bitwise OR
-            *x |= *y;
+            value        = x |= y;
+            chip8->v[vx] = value;
             return true;
         case 0x2: // Bitwise AND
-            *x &= *y;
+            value        = x &= y;
+            chip8->v[vx] = value;
             return true;
         case 0x3: // Bitwise XOR
-            *x ^= *y;
+            value        = x ^= y;
+            chip8->v[vx] = value;
             return true;
         case 0x4: // Add with Carry
-            if (*x > UINT8_MAX - *y) *f = 0x1;
-            *x += *y;
+            value         = x + y;
+            chip8->v[vx]  = value;
+            chip8->v[0xF] = (x > UINT8_MAX - y) & 0x1;
             return true;
-        case 0x5: // Subtract X from Y
-            if (*x > *y) *f = 0x1;
-            *x = *x - *y;
+        case 0x5: // Subtract Y from X
+            value         = x - y;
+            chip8->v[vx]  = value;
+            chip8->v[0xF] = (x > y) & 0x1;
             return true;
-        case 0x6: // Shift Right
-            // clang-format off
-            // TODO: Make this behavior configurable at runtime.
-#ifdef LEGACY_SHIFT_BEHAVIOR
-            *x = *y;
+        case 0x6:            // Shift Right
+#ifdef LEGACY_SHIFT_BEHAVIOR // TODO: Make this behavior configurable at runtime.
+            x = y;
 #endif
-            *f = (*x) & 0x1;
-            *x >>= 0x1;
+            value         = x >> 0x1;
+            chip8->v[vx]  = value;
+            chip8->v[0xF] = (x) & 0x1;
             return true;
-            // clang-format on
-        case 0x7: // Subtract Y from X
-            if (*y > *x) *f = 0x1;
-            *x = *y - *x;
+        case 0x7: // Subtract X from Y
+            value         = y - x;
+            chip8->v[vx]  = value;
+            chip8->v[0xF] = (y > x) & 0x1;
             return true;
-        case 0xE: // Shift Left
-            // clang-format off
-            // TODO: Make this behavior configurable at runtime.
-#ifdef LEGACY_SHIFT_BEHAVIOR
-            *x = *y;
+        case 0xE:            // Shift Left
+#ifdef LEGACY_SHIFT_BEHAVIOR // TODO: Make this behavior configurable at runtime.
+            x = y;
 #endif
-            *f = (*x >> 7) & 0x1;
-            *x <<= 0x1;
+            value         = x << 0x1;
+            chip8->v[vx]  = value;
+            chip8->v[0xF] = (x >> 7) & 0x1;
             return true;
-            // clang-format on
         default:
             // Remaining instructions do not resolve
             result->status = CHIP8_INSTRUCTION_INVALID;
@@ -240,7 +246,8 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
     // Data for drawing the actual sprite
     uint8_t  h      = N4(result->opcode);
     uint8_t *sprite = &chip8->memory[chip8->i];
-    uint8_t *f      = &chip8->v[0xF]; // Flag gets set if a pixel turns off
+    uint8_t *f      = &chip8->v[0xF];
+    *f              = 0x0; // Default flag to off; enable it if a pixel is turned off
 
     // Iterate sprite byte-by-byte
     for (uint8_t j = 0; j < h; ++j) {
@@ -262,14 +269,17 @@ static bool chip8_execute_draw_instruction(chip8_t *chip8, chip8_state_t *result
 }
 
 static bool chip8_execute_keypress_instruction(chip8_t *chip8, chip8_state_t *result) {
-    uint8_t *x = &chip8->v[N2(result->opcode)];
+    uint8_t *x          = &chip8->v[N2(result->opcode)];
+    uint8_t  key        = *x & 0xF;
+    bool     is_pressed = (chip8->keypad_state >> key) & 0x1;
 
     switch (B2(result->opcode)) {
-        case 0x9E:
-        case 0xA1:
-            // TODO: Implement when keypress handling has been added
-            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
-            return false;
+        case 0x9E: // Skip if Key Pressed
+            if (is_pressed) chip8->pc += 2;
+            return true;
+        case 0xA1: // Skip if Key Not Presed
+            if (!is_pressed) chip8->pc += 2;
+            return true;
         default:
             // Remaining instructions do not resolve
             result->status = CHIP8_INSTRUCTION_INVALID;
@@ -285,9 +295,19 @@ static bool chip8_execute_misc_instruction(chip8_t *chip8, chip8_state_t *result
             *x = chip8->delay_timer;
             return true;
         case 0x0A: // Get Key
-            // TODO: Implement when keypress handling has been added
-            result->status = CHIP8_INSTRUCTION_NOT_IMPLEMENTED;
-            return false;
+            if (chip8->keypad_state > 0x0) {
+                // Find the key that was pressed and write to X
+                for (uint8_t i = 0; i < 0xF; ++i) {
+                    if ((chip8->keypad_state >> i) & 0x1) {
+                        *x = i;
+                        break;
+                    }
+                }
+            } else {
+                // Loop until a key is pressed
+                chip8->pc -= 2;
+            }
+            return true;
         case 0x15: // Set Delay Timer
             chip8->delay_timer = *x;
             return true;
