@@ -12,6 +12,7 @@
 #define DISPLAY_WIDTH     64         // Per specification; scaled by driver
 #define DISPLAY_HEIGHT    32         // Per specification; scaled by driver
 #define FRAMES_PER_SECOND 60         // Per specification
+#define TICKS_PER_SECOND  60         // Per specification
 
 typedef enum {
     CHIP8_OK = 0,
