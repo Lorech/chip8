@@ -87,6 +87,7 @@ bool platform_load_rom(uint8_t *rom, size_t max_size, int argc, char **argv) {
 
 void platform_draw_display(bool *buffer) {
     BeginDrawing();
+    ClearBackground(BLACK);
     for (uint8_t x = 0; x < display_width; ++x) {
         for (uint8_t y = 0; y < display_height; ++y) {
             if (buffer[y * display_width + x]) {

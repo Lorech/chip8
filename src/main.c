@@ -32,12 +32,13 @@ int main(int argc, char **argv) {
     uint64_t last_time = platform_get_time();
 
     do {
-        uint64_t start_time = platform_get_time();
+        uint64_t start_time         = platform_get_time();
+        bool     frame_buffer_dirty = false;
 
         chip8.keypad_state = platform_get_keypad();
         for (uint64_t i = 0; i < cpu_ticks_per_frame; ++i) {
             chip8_state_t state = chip8_run_cycle(&chip8);
-            if (state.frame_buffer_dirty) platform_draw_display(chip8.display);
+            if (state.frame_buffer_dirty) frame_buffer_dirty = true;
             if (state.sound_timer_set) {
                 chip8.playing_sound = true;
                 platform_play_audio();
@@ -52,6 +53,8 @@ int main(int argc, char **argv) {
                 platform_stop_audio();
             }
         }
+
+        if (frame_buffer_dirty) platform_draw_display(chip8.display);
 
         uint64_t end_time   = platform_get_time();
         uint64_t frame_time = end_time - start_time;
