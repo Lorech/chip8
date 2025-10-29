@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "chip8.h"
+#include "log.h"
 #include "platform.h"
 
 #define SECOND 1000000 // 1 second in microseconds
@@ -30,16 +31,22 @@ int main(int argc, char **argv) {
     uint64_t timer_ticks_per_frame = TICKS_PER_SECOND / FRAMES_PER_SECOND;
 
     uint64_t last_time = platform_get_time();
+    uint64_t frame     = 0;
 
     do {
         uint64_t start_time         = platform_get_time();
         bool     frame_buffer_dirty = false;
+        ++frame;
 
         chip8.keypad_state = platform_get_keypad();
+        LOG_DEBUG(LOG_SUBSYS_SYSTEM, "Keypad State %u", chip8.keypad_state);
         for (uint64_t i = 0; i < cpu_ticks_per_frame; ++i) {
             chip8_state_t state = chip8_run_cycle(&chip8);
+            LOG_DEBUG(LOG_SUBSYS_CPU, "Frame %u executed instruction %4X", frame, state.opcode);
+            if (state.status != CHIP8_OK) LOG_WARN(LOG_SUBSYS_CPU, "Bad cycle status %d after instruction %4X.", state.status, state.opcode);
             if (state.frame_buffer_dirty) frame_buffer_dirty = true;
             if (state.sound_timer_set) {
+                LOG_DEBUG(LOG_SUBSYS_TIMER, "Starting sound timer.");
                 chip8.playing_sound = true;
                 platform_play_audio();
             }
@@ -49,6 +56,7 @@ int main(int argc, char **argv) {
             if (chip8.sound_timer > 0) chip8.sound_timer -= 1;
             if (chip8.delay_timer > 0) chip8.delay_timer -= 1;
             if (chip8.playing_sound && chip8.sound_timer == 0) {
+                LOG_DEBUG(LOG_SUBSYS_TIMER, "Stopping sound timer.");
                 chip8.playing_sound = false;
                 platform_stop_audio();
             }
