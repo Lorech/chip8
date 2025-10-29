@@ -36,6 +36,10 @@ void platform_close() {
     CloseWindow();
 }
 
+bool platform_should_run_frame() {
+    return !WindowShouldClose();
+}
+
 void platform_sleep(uint64_t microseconds) {
 #ifdef _WIN32
     Sleep(DWORD(microseconds / 1000));

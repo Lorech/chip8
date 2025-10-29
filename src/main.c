@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     uint64_t last_time = platform_get_time();
     uint64_t frame     = 0;
 
-    do {
+    while (platform_should_run_frame()) {
         uint64_t start_time         = platform_get_time();
         bool     frame_buffer_dirty = false;
         ++frame;
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
         }
 
         last_time = end_time;
-    } while (true);
+    }
 
     platform_close();
 }

@@ -19,6 +19,19 @@ void platform_init(uint8_t width, uint8_t height, uint8_t fps);
 void platform_close(void);
 
 /**
+ * If the program should continue execution.
+ *
+ * This should be used as the condition for running the main loop, waiting on
+ * this function to return `false` to exit out and deinitialize everything.
+ *
+ * Such a scenario may be impossible for some platforms, others may rely on some
+ * external callback, e.g., a window being closed to signal the program to halt.
+ *
+ * @returns If another frame should be executed
+ */
+bool platform_should_run_frame(void);
+
+/**
  * Sleep for a fixed amount of time.
  *
  * Avoid CPU churn while running an empty main loop.
