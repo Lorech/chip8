@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "chip8.h"
+#include "keypad.h"
 #include "log.h"
 #include "platform.h"
 
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
         bool     frame_buffer_dirty = false;
         ++frame;
 
-        chip8.keypad_state = platform_get_keypad();
+        chip8.keypad_state = keypad_map_from_input(platform_get_keypad(), chip8.keypad);
         LOG_DEBUG(LOG_SUBSYS_SYSTEM, "Keypad State %u", chip8.keypad_state);
         for (uint64_t i = 0; i < cpu_ticks_per_frame; ++i) {
             chip8_state_t state = chip8_run_cycle(&chip8);

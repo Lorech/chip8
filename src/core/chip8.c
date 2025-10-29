@@ -5,6 +5,7 @@
 
 #include "bitmask.h"
 #include "font.h"
+#include "keypad.h"
 #include "log.h"
 
 static uint8_t (*generate_random_number)(void);
@@ -13,6 +14,7 @@ void chip8_init(chip8_t *chip8, uint8_t (*generator)(void)) {
     memset(chip8, 0, sizeof(chip8_t));
     chip8->pc            = PROGRAM_START;
     chip8->stack_pointer = -1;
+    chip8->keypad        = DEFAULT_KEYPAD;
     chip8_load_font(chip8, DEFAULT_FONT);
     generate_random_number = generator;
 }
