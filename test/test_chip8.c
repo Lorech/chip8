@@ -301,24 +301,44 @@ TEST(CHIP8, SkipKeyNotPressed) {
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(PROGRAM_START + 6, chip8.pc, "Should skip; PC advances twice.");
 }
 
-// TODO: Add test for legacy/modern shift testing when it is configurable at runtime.
-// Currently, since it depends on a compiler flag, we test with both variables
-// set to the same register so that neither behavior can change test results.
-TEST(CHIP8, Shift) {
-    uint8_t program[4] = {0x80, 0x06, 0x80, 0x0E};
+// TODO: Add tests for quirk handling.
+TEST(CHIP8, ShiftLeft) {
+    uint8_t program[4] = {0x80, 0x0E, 0x80, 0x0E};
     bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
 
-    chip8.v[0] = 0b00001000;
+    chip8.v[0] = 0b01000000;
+
+    chip8_state_t first_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x800E, first_result.opcode, "Should create \"Shift Left\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b10000000, chip8.v[0x0], "Should shift V0 left.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x0, chip8.v[0xF], "Should not set flag if no bits removed.");
+
+    chip8_state_t second_result = chip8_run_cycle(&chip8);
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x800E, first_result.opcode, "Should create \"Shift Left\".");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00000000, chip8.v[0x0], "Should shift V0 left.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x1, chip8.v[0xF], "Should set flag when bit is shifted out.");
+}
+
+// TODO: Add tests for quirk handling.
+TEST(CHIP8, ShiftRight) {
+    uint8_t program[4] = {0x80, 0x06, 0x80, 0x06};
+    bool    loaded     = chip8_load_program(&chip8, program, sizeof(program));
+
+    chip8.v[0] = 0b00000010;
 
     chip8_state_t first_result = chip8_run_cycle(&chip8);
     TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x8006, first_result.opcode, "Should create \"Shift Right\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, first_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00000100, chip8.v[0], "Should shift V0 right.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00000001, chip8.v[0x0], "Should shift V0 right.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x0, chip8.v[0xF], "Should not set flag if no bits removed.");
 
     chip8_state_t second_result = chip8_run_cycle(&chip8);
-    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x800E, second_result.opcode, "Should create \"Shift Left\".");
+    TEST_ASSERT_EQUAL_UINT16_MESSAGE(0x8006, first_result.opcode, "Should create \"Shift Right\".");
     TEST_ASSERT_EQUAL_UINT8_MESSAGE(CHIP8_OK, second_result.status, "Should be implemented.");
-    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00001000, chip8.v[0], "Should shift V0 left.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0b00000000, chip8.v[0x0], "Should shift V0 right.");
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(0x1, chip8.v[0xF], "Should set flag when bit is shifted out.");
 }
 
 TEST(CHIP8, SetIndex) {
