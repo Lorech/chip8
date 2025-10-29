@@ -108,6 +108,9 @@ void platform_stop_audio(void) {
 
 uint16_t platform_get_keypad(void) {
     uint16_t state = 0;
+#ifndef PLATFORM_WEB
+    PollInputEvents(); // On web, inputs register only after checking for them
+#endif
     if (IsKeyDown(KEY_ONE)) state |= (0x1 << 0x1);
     if (IsKeyDown(KEY_TWO)) state |= (0x1 << 0x2);
     if (IsKeyDown(KEY_THREE)) state |= (0x1 << 0x3);
@@ -124,5 +127,8 @@ uint16_t platform_get_keypad(void) {
     if (IsKeyDown(KEY_X)) state |= (0x1 << 0x0);
     if (IsKeyDown(KEY_C)) state |= (0x1 << 0xB);
     if (IsKeyDown(KEY_V)) state |= (0x1 << 0xF);
+#ifdef PLATFORM_WEB
+    PollInputEvents();
+#endif
     return state;
 }
